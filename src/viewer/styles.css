@@ -1,0 +1,147 @@
+:root {
+    --bg-color: #000000;
+    --text-color: #FFFFFF;
+    --warning-gentle: #FF9800;
+    /* Orange 500 */
+    --warning-critical: #D32F2F;
+    /* Red 700 */
+
+    --font-ui: 'Inter', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    cursor: none;
+    /* Hide cursor */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-user-select: none;
+    user-select: none;
+    transition: background-color 0.3s ease;
+}
+
+body.overtime-mode {
+    background-color: var(--warning-critical);
+}
+
+.warning-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
+    border: 0px solid transparent;
+    pointer-events: none;
+    transition: all 0.5s ease-in-out;
+    box-sizing: border-box;
+    z-index: 100;
+    border-radius: 20px;
+}
+
+/* Animations */
+@keyframes pulse-orange {
+    0% {
+        border-width: 0px;
+        border-color: rgba(255, 152, 0, 0);
+    }
+
+    50% {
+        border-width: 20px;
+        border-color: rgba(255, 152, 0, 0.8);
+    }
+
+    100% {
+        border-width: 0px;
+        border-color: rgba(255, 152, 0, 0);
+    }
+}
+
+@keyframes pulse-red {
+    0% {
+        border-width: 0px;
+        border-color: rgba(211, 47, 47, 0);
+    }
+
+    50% {
+        border-width: 30px;
+        border-color: rgba(211, 47, 47, 0.9);
+    }
+
+    100% {
+        border-width: 0px;
+        border-color: rgba(211, 47, 47, 0);
+    }
+}
+
+.warning-gentle {
+    animation: pulse-orange 4s infinite ease-in-out;
+}
+
+.warning-critical {
+    animation: pulse-red 2s infinite ease-in-out;
+    /* Slightly faster for critical? PRD says "Slow pulsing". Let's stick to 2s fade in/out = 4s total? PRD 5.3: "Border pulse: 2s fade-in / 2s fade-out". So 4s total. */
+    animation-duration: 4s;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80%;
+    /* Ensure text doesn't hit warning borders */
+    max-width: 1400px;
+}
+
+.session-title {
+    font-family: var(--font-ui);
+    font-size: 3vw;
+    color: rgba(255, 255, 255, 0.6);
+    /* Reduced opacity per PRD 5.2 */
+    margin-bottom: 2vh;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-height: 1.2em;
+    /* Reserve space */
+}
+
+.timer-display {
+    font-family: var(--font-mono);
+    font-size: 25vw;
+    /* Massive */
+    font-weight: 700;
+    line-height: 1;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    transition: opacity 0.3s ease;
+}
+
+
+
+.timer-display.long-text {
+    font-size: 18vw;
+    /* Smaller for H:MM:SS */
+}
+
+.overtime-message {
+    font-family: var(--font-ui);
+    font-size: 20vw;
+    /* Bigger */
+    font-weight: 900;
+    color: #FFFFFF;
+    /* White */
+    text-align: center;
+    animation: none;
+    white-space: nowrap;
+    text-transform: uppercase;
+    line-height: 1;
+}

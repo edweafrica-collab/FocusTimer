@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusTime Control</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>FocusTime</h1>
+            <div id="connection-status" class="status-badge">Checking Displays...</div>
+        </header>
+
+        <section class="timer-display">
+            <div id="main-timer" class="time-readout">00:00</div>
+            <div id="timer-status" class="status-text">IDLE</div>
+        </section>
+
+        <section class="controls-section">
+            <div class="input-group">
+                <label>Set Duration</label>
+                <div class="time-inputs">
+                    <input type="number" id="input-min" placeholder="MM" min="0" max="999">
+                    <span>:</span>
+                    <input type="number" id="input-sec" placeholder="SS" min="0" max="59">
+                </div>
+            </div>
+
+            <div class="presets">
+                <button class="preset-btn" data-time="5">5m</button>
+                <button class="preset-btn" data-time="10">10m</button>
+                <button class="preset-btn" data-time="15">15m</button>
+                <button class="preset-btn" data-time="20">20m</button>
+                <button class="preset-btn" data-time="30">30m</button>
+                <button class="preset-btn" data-time="45">45m</button>
+                <button class="preset-btn" data-time="60">60m</button>
+            </div>
+
+            <div class="transport-controls">
+                <button id="btn-start" class="transport-btn start">START</button>
+                <button id="btn-pause" class="transport-btn pause" hidden>PAUSE</button>
+                <button id="btn-stop" class="transport-btn stop">RESET</button>
+            </div>
+
+            <div class="adjust-controls">
+                <button class="adjust-btn" data-adjust="60">+1m</button>
+                <button class="adjust-btn" data-adjust="-60">-1m</button>
+                <button class="adjust-btn" data-adjust="10">+10s</button>
+                <button class="adjust-btn" data-adjust="-10">-10s</button>
+            </div>
+        </section>
+
+        <section class="meta-section">
+            <label>Session Title (Optional)</label>
+            <input type="text" id="session-title" placeholder="e.g. Keynote Speech">
+            <button id="btn-update-title" class="secondary-btn">Update Viewer</button>
+        </section>
+    </div>
+
+    <!-- Recovery Modal -->
+    <div id="recovery-modal" class="modal-overlay" hidden>
+        <div class="modal-content">
+            <h2>Previous Session Found</h2>
+            <p id="recovery-desc">A session was in progress. Do you want to resume?</p>
+            <div class="modal-actions">
+                <button id="btn-resume">Resume</button>
+                <button id="btn-discard" class="secondary-btn">Start New</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/timer.js"></script>
+    <script src="renderer.js"></script>
+</body>
+
+</html>
