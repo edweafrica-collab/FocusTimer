@@ -14,7 +14,10 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>FocusTime</h1>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <h1>FocusTime</h1>
+                <button id="btn-show-viewer" hidden>Show Screen</button>
+            </div>
             <div id="connection-status" class="status-badge">Checking Displays...</div>
         </header>
 
@@ -41,6 +44,7 @@
                 <button class="preset-btn" data-time="30">30m</button>
                 <button class="preset-btn" data-time="45">45m</button>
                 <button class="preset-btn" data-time="60">60m</button>
+                <button class="preset-btn" data-time="90">90m</button>
             </div>
 
             <div class="transport-controls">
@@ -75,6 +79,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Multi-Screen Modal -->
+    <div id="screen-modal" class="modal-overlay" hidden>
+        <div class="modal-content">
+            <h2>Secondary Display Detected</h2>
+            <p>Do you want to launch the Viewer on the second screen?</p>
+            <div class="modal-actions">
+                <button id="btn-screen-yes">Yes, Launch on Screen 2</button>
+                <button id="btn-screen-no" class="secondary-btn">No, Use Primary</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Single-Screen Warning Modal -->
+    <div id="single-screen-modal" class="modal-overlay" hidden>
+        <div class="modal-content">
+            <h3>Fullscreen Mode</h3>
+            <p>The timer will take over this screen.</p>
+            <p>Press <strong>ESC</strong> to return to these controls.</p>
+            <div class="modal-actions">
+                <button id="btn-single-launch">Launch Viewer</button>
+                <button id="btn-single-cancel" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 
     <script src="../shared/timer.js"></script>
     <script src="renderer.js"></script>

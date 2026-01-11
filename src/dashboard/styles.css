@@ -275,3 +275,33 @@ h1 {
     color: #ccc;
     background: transparent;
 }
+
+/* Specific Modals */
+.modal-content h3 {
+    margin-top: 0;
+    color: var(--warning-gentle);
+}
+
+.modal-content p strong {
+    color: white;
+    display: block;
+    margin-top: 8px;
+    font-size: 1.1rem;
+}
+
+/* Show Viewer Button */
+#btn-show-viewer {
+    background: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+#btn-show-viewer:hover {
+    background: var(--accent-color);
+    color: white;
+}

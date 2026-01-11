@@ -13,7 +13,12 @@ const els = {
     adjusts: document.querySelectorAll('.adjust-btn'),
     sessionTitle: document.getElementById('session-title'),
     btnUpdateTitle: document.getElementById('btn-update-title'),
-    connectionStatus: document.getElementById('connection-status')
+    connectionStatus: document.getElementById('connection-status'),
+    btnShowViewer: document.getElementById('btn-show-viewer'),
+    // Modals
+    singleModal: document.getElementById('single-screen-modal'),
+    btnSingleLaunch: document.getElementById('btn-single-launch'),
+    btnSingleCancel: document.getElementById('btn-single-cancel')
 };
 
 // State
@@ -38,21 +43,63 @@ function init() {
     };
 
     // Event Listeners
-    els.btnStart.addEventListener('click', () => timer.start());
+    els.btnStart.addEventListener('click', () => startSequence());
     els.btnPause.addEventListener('click', () => timer.pause());
     els.btnStop.addEventListener('click', () => {
-        // If running, confirm? For MVP speed, maybe just stop or require double click? 
-        // PRD says "Stop / Reset (clears current session)". Simple click OK.
+        // Strict Reset: Clear everything to zero
         timer.stop();
-        saveCurrentState(); // Save the STOPPED state
+        timer.totalDuration = 0;
+        timer.remaining = 0;
+        timer.warningLevel = null; // Clear warnings
+        timer.emitUpdate(); // Force UI update to 00:00
+
+        // INSTANT FEEDBACK v1.1.3
+        updateDisplay("00:00", 0, null);
+
+        // RESET INPUTS v1.1.4
+        els.minInput.value = "";
+        els.secInput.value = "";
+
+        saveCurrentState();
     });
 
     els.presets.forEach(btn => {
         btn.addEventListener('click', () => {
             const min = parseInt(btn.dataset.time);
-            timer.setDuration(min);
-            els.minInput.value = min;
-            els.secInput.value = "00";
+
+            // Additive logic: Add to remaining time instead of setting duration
+            const msToAdd = min * 60 * 1000;
+
+            // If timer was stopped/reset (IDLE), treat as setting a new duration from 0
+            if (timer.status === 'IDLE' && timer.remaining <= 0) {
+                timer.setDuration(min);
+            } else {
+                timer.remaining += msToAdd;
+                timer.totalDuration += msToAdd; // Extend total duration too so progress logic stays consistent?
+                // Actually, if we add 10m to a 20m timer that has 5m left... remaining becomes 15m.
+                // Total duration should probably expand to reflect the session length increased?
+                // Or user just wants more time on clock.
+                // "Each click adds its value to the current timer value."
+
+                timer.emitUpdate(); // Force UI update
+
+                // INSTANT FEEDBACK v1.1.3s
+                // Update display immediately so it doesn't wait for tick
+                updateDisplay(timer.formatTime(timer.remaining), timer.remaining, timer.warningLevel);
+            }
+
+            // Sync inputs to show new remaining duration (approximated to min/sec)
+            // Wait, we shouldn't necessarily update inputs to match remaining exactly if inputs are used for "Set Duration".
+            // But usually inputs reflect current state?
+            // Existing code: els.minInput.value = min; (sets inputs to the button value)
+
+            // Let's update inputs to match current remaining time so user sees what's happening
+            const totalSec = Math.ceil(timer.remaining / 1000);
+            if (totalSec > 0) {
+                els.minInput.value = Math.floor(totalSec / 60);
+                els.secInput.value = totalSec % 60;
+            }
+
             saveCurrentState();
         });
     });
@@ -78,6 +125,17 @@ function init() {
 
     els.minInput.addEventListener('change', handleManualInput);
     els.secInput.addEventListener('change', handleManualInput);
+
+    // Enter Key to Start
+    const handleEnterKey = (e) => {
+        if (e.key === 'Enter') {
+            startSequence();
+            els.minInput.blur();
+            els.secInput.blur();
+        }
+    };
+    els.minInput.addEventListener('keydown', handleEnterKey);
+    els.secInput.addEventListener('keydown', handleEnterKey);
 
     els.sessionTitle.addEventListener('input', (e) => {
         sessionTitle = e.target.value;
@@ -140,10 +198,32 @@ function init() {
                 break;
             case 'Escape':
                 e.preventDefault();
-                timer.stop();
+                // Esc logic for dashboard usually stops? Or just ignores?
+                // PRD said Esc returns control. If focus is here, maybe Stop?
+                // Let's keep it safe: Stop if running? Or just do nothing.
+                // "The Escape (Esc) key must act as a universal hotkey to... Return control to the Operator Dashboard"
+                // If we are already here, maybe nothing.
                 break;
         }
     });
+
+    // App Close Safety
+    // App Close Safety (Main Process Driven)
+    window.electronAPI.onAppClosing(() => {
+        window.electronAPI.sendCloseResult(timer.status === 'RUNNING');
+    });
+
+    window.onbeforeunload = null;
+
+    // Show Viewer Button Logic
+    els.btnShowViewer.onclick = async () => {
+        const screens = await window.electronAPI.getScreens();
+        if (screens.length > 1) {
+            window.electronAPI.launchViewer(screens[1].id || screens[0].id); // Secondary or Primary fallback
+        } else {
+            window.electronAPI.launchViewer(screens[0].id);
+        }
+    };
 
     // Check Multi-screen status
     checkScreens();
@@ -157,12 +237,42 @@ function init() {
 
 async function checkScreens() {
     const screens = await window.electronAPI.getScreens();
+
     if (screens.length > 1) {
-        els.connectionStatus.textContent = `Viewer Active on Display 2 (${screens.length} detected)`;
+        // Multi-screen: Show connection status
+        els.connectionStatus.textContent = `Dual Display Ready`;
         els.connectionStatus.style.color = '#4CAF50';
     } else {
+        // Single Screen
         els.connectionStatus.textContent = "Single Display Mode";
         els.connectionStatus.style.color = '#B0B0B0';
+    }
+}
+
+async function startSequence() {
+    if (timer.status === 'RUNNING') return; // Already running
+
+    const screens = await window.electronAPI.getScreens();
+
+    if (screens.length > 1) {
+        // Multi-screen: Auto launch on secondary
+        const secondary = screens.find(s => s.id !== 1) || screens[1];
+        window.electronAPI.launchViewer(secondary.id);
+        timer.start();
+    } else {
+        // Single Screen: Prompt
+        els.singleModal.hidden = false;
+
+        els.btnSingleLaunch.onclick = () => {
+            els.singleModal.hidden = true;
+            window.electronAPI.launchViewer(screens[0].id);
+            timer.start();
+        };
+
+        els.btnSingleCancel.onclick = () => {
+            // User cancelled. Do not start.
+            els.singleModal.hidden = true;
+        };
     }
 }
 
@@ -194,6 +304,14 @@ function updateControls(status) {
         els.btnPause.hidden = true;
         els.minInput.disabled = false;
         els.secInput.disabled = false;
+    }
+
+    // Show/Hide "Show Viewer" button based on running state
+    // We want it visible if we are running, in case user closed the window.
+    if (status === 'RUNNING') {
+        els.btnShowViewer.hidden = false;
+    } else {
+        els.btnShowViewer.hidden = true;
     }
 }
 

@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     // System
     getScreens: () => ipcRenderer.invoke('get-screens'),
+    launchViewer: (displayId) => ipcRenderer.send('launch-viewer', displayId),
 
     // State Sync (for recovery)
     onRequestStateSync: (callback) => ipcRenderer.on('request-state-sync', (_event) => callback()),
@@ -18,4 +19,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Persistence
     saveState: (state) => ipcRenderer.send('save-state', state),
     loadState: () => ipcRenderer.invoke('load-state'),
+
+    // Viewer Control
+    sendViewerEscape: () => ipcRenderer.send('viewer-escape'),
+
+    // App Control
+    onAppClosing: (callback) => ipcRenderer.on('app-closing', callback),
+    sendCloseResult: (isRunning) => ipcRenderer.send('close-check-result', { isRunning }),
 });
