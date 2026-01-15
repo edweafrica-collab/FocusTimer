@@ -22,7 +22,7 @@ function createSplash() {
         frame: false,
         alwaysOnTop: true,
         transparent: false,
-        backgroundColor: '#121212',
+        backgroundColor: '#0B0D10',
         resizable: false,
         webPreferences: {
             nodeIntegration: true, // For simple shell usage in splash

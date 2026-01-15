@@ -137,8 +137,28 @@ function init() {
     els.minInput.addEventListener('keydown', handleEnterKey);
     els.secInput.addEventListener('keydown', handleEnterKey);
 
-    els.sessionTitle.addEventListener('input', (e) => {
-        sessionTitle = e.target.value;
+    // Session Title Logic (v1.1.7 - Manual Control)
+    const btnPublish = document.getElementById('btn-publish-title');
+    const btnClear = document.getElementById('btn-clear-title');
+
+    // Remove "Live Typing" - Only update on button click
+    btnPublish.addEventListener('click', () => {
+        sessionTitle = els.sessionTitle.value;
+        broadcastState();
+        // User requested NO persistence for title on restart.
+        // But we DO save it to the current running state in case of crash verify?
+        // User said: "if user restarts the app... user should have to type title again."
+        // So we will NOT include it in saveState? Or we save it but don't load it?
+        // Let's safe it to session state so if viewer reconnects it gets it.
+        // But on FRESH APP RELAUNCH, we wipe everything anyway in main.js? 
+        // FocusTimer has "Fresh Start" logic in main.js?
+        // Let's ensure saveCurrentState includes it for *runtime* stability, but distinct form reload.
+        saveCurrentState();
+    });
+
+    btnClear.addEventListener('click', () => {
+        els.sessionTitle.value = ""; // Clear input
+        sessionTitle = "";           // Clear state
         broadcastState();
         saveCurrentState();
     });
@@ -167,8 +187,9 @@ function init() {
                 // But maybe safer to start in PAUSED state if it was running?
                 // Let's restore exact state. If it was running, it starts running.
 
-                sessionTitle = savedState.sessionTitle || "";
-                els.sessionTitle.value = sessionTitle;
+                // v1.1.7: Title does NOT persist on restart.
+                sessionTitle = "";
+                els.sessionTitle.value = "";
 
                 if (timer.status === 'RUNNING') {
                     timer.start();
@@ -239,13 +260,13 @@ async function checkScreens() {
     const screens = await window.electronAPI.getScreens();
 
     if (screens.length > 1) {
-        // Multi-screen: Show connection status
-        els.connectionStatus.textContent = `Dual Display Ready`;
-        els.connectionStatus.style.color = '#4CAF50';
+        // Multi-screen: Show connection status with dot indicator
+        els.connectionStatus.textContent = 'Dual Display';
+        els.connectionStatus.classList.add('connected');
     } else {
         // Single Screen
-        els.connectionStatus.textContent = "Single Display Mode";
-        els.connectionStatus.style.color = '#B0B0B0';
+        els.connectionStatus.textContent = 'Single Display';
+        els.connectionStatus.classList.remove('connected');
     }
 }
 
@@ -279,20 +300,25 @@ async function startSequence() {
 function updateDisplay(timeStr, ms, warningLevel) {
     els.timeReadout.textContent = timeStr;
 
-    // Visual feedback on Dashboard for warnings?
-    if (warningLevel === 'CRITICAL') {
-        els.timeReadout.style.color = 'var(--warning-critical)';
+    // Remove all warning classes first
+    els.timeReadout.classList.remove('warning-gentle', 'warning-critical');
+
+    // Apply warning class based on level
+    if (warningLevel === 'CRITICAL' || warningLevel === 'OVERTIME') {
+        els.timeReadout.classList.add('warning-critical');
     } else if (warningLevel === 'GENTLE') {
-        els.timeReadout.style.color = 'var(--warning-gentle)';
-    } else if (warningLevel === 'OVERTIME') {
-        els.timeReadout.style.color = 'var(--warning-critical)';
-    } else {
-        els.timeReadout.style.color = 'white';
+        els.timeReadout.classList.add('warning-gentle');
     }
 }
 
 function updateControls(status) {
-    els.timerStatus.textContent = status;
+    // Human-friendly status text
+    const statusMap = {
+        'IDLE': 'Ready',
+        'RUNNING': 'Running',
+        'PAUSED': 'Paused'
+    };
+    els.timerStatus.textContent = statusMap[status] || status;
 
     if (status === 'RUNNING') {
         els.btnStart.hidden = true;

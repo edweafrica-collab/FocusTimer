@@ -1,19 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
+/* ============================================
+   FocusTimer Viewer - Redesign v2.0
+   "Invisible control. Unmissable time."
+   Audience-facing fullscreen display
+   ============================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@700;900&display=swap');
+
+/* === DESIGN TOKENS === */
 :root {
+    /* Base Colors */
     --bg-color: #000000;
     --text-color: #FFFFFF;
-    --warning-gentle: #FF9800;
-    /* Orange 500 */
-    --warning-critical: #D32F2F;
-    /* Red 700 */
 
-    --font-ui: 'Inter', sans-serif;
-    --font-mono: 'Roboto Mono', monospace;
+    /* Warning Colors - Updated palette */
+    --signal-amber: #FBBF24;
+    --signal-red: #EF4444;
+
+    /* Legacy compatibility */
+    --warning-gentle: var(--signal-amber);
+    --warning-critical: var(--signal-red);
+
+    /* Typography */
+    --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-timer: 'Oswald', sans-serif;
-    /* New impactful font */
+
+    /* Motion */
+    --ease-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
 }
 
+/* === BODY === */
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
@@ -23,103 +40,40 @@ body {
     width: 100vw;
     overflow: hidden;
     cursor: none;
-    /* Hide cursor */
     display: flex;
     justify-content: center;
     align-items: center;
     -webkit-user-select: none;
     user-select: none;
-    transition: background-color 0.3s ease;
+    transition: background-color var(--duration-slow) var(--ease-out);
 }
 
+/* === OVERTIME STATE === */
 body.overtime-mode {
-    background-color: var(--warning-critical);
+    background-color: var(--signal-red);
     color: #FFFFFF;
-    /* Ensure white text */
-    /* v1.1.6 Pulse Animation */
-    animation: bg-pulse-red 3s infinite ease-in-out;
+    animation: bg-pulse-overtime 4s infinite ease-in-out;
 }
 
-/* Ensure overtime message and timer are white in this mode */
 body.overtime-mode .timer-display,
 body.overtime-mode .overtime-message {
     color: #FFFFFF;
 }
 
-@keyframes bg-pulse-red {
-    0% {
-        background-color: var(--warning-critical);
+/* Slower, more authoritative pulse */
+@keyframes bg-pulse-overtime {
+
+    0%,
+    100% {
+        background-color: var(--signal-red);
     }
 
     50% {
-        background-color: #000000;
-    }
-
-    /* Fade to black */
-    100% {
-        background-color: var(--warning-critical);
+        background-color: #1a0505;
     }
 }
 
-.warning-overlay {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-    bottom: 20px;
-    border: 0px solid transparent;
-    pointer-events: none;
-    transition: all 0.5s ease-in-out;
-    box-sizing: border-box;
-    z-index: 100;
-    border-radius: 20px;
-}
-
-/* Animations */
-@keyframes pulse-orange {
-    0% {
-        border-width: 0px;
-        border-color: rgba(255, 152, 0, 0);
-    }
-
-    50% {
-        border-width: 20px;
-        border-color: rgba(255, 152, 0, 0.8);
-    }
-
-    100% {
-        border-width: 0px;
-        border-color: rgba(255, 152, 0, 0);
-    }
-}
-
-@keyframes pulse-red {
-    0% {
-        border-width: 0px;
-        border-color: rgba(211, 47, 47, 0);
-    }
-
-    50% {
-        border-width: 30px;
-        border-color: rgba(211, 47, 47, 0.9);
-    }
-
-    100% {
-        border-width: 0px;
-        border-color: rgba(211, 47, 47, 0);
-    }
-}
-
-.warning-gentle {
-    animation: pulse-orange 4s infinite ease-in-out;
-}
-
-.warning-critical {
-    animation: pulse-red 2s infinite ease-in-out;
-    /* Slightly faster for critical? PRD says "Slow pulsing". Let's stick to 2s fade in/out = 4s total? PRD 5.3: "Border pulse: 2s fade-in / 2s fade-out". So 4s total. */
-    animation-duration: 4s;
-}
-
+/* === CONTAINER === */
 .container {
     display: block;
     width: 100vw;
@@ -128,28 +82,97 @@ body.overtime-mode .overtime-message {
     overflow: hidden;
 }
 
+/* === WARNING OVERLAY (Ambient Glow) === */
+.warning-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+/* Gentle Warning - Soft amber glow from edges */
+.warning-gentle {
+    opacity: 1;
+    box-shadow: inset 0 0 150px 50px rgba(251, 191, 36, 0.15);
+    animation: glow-breathe-amber 3s infinite ease-in-out;
+}
+
+@keyframes glow-breathe-amber {
+
+    0%,
+    100% {
+        box-shadow: inset 0 0 100px 30px rgba(251, 191, 36, 0.1);
+    }
+
+    50% {
+        box-shadow: inset 0 0 200px 80px rgba(251, 191, 36, 0.25);
+    }
+}
+
+/* Critical Warning - Stronger red glow */
+.warning-critical {
+    opacity: 1;
+    animation: glow-breathe-red 2s infinite ease-in-out;
+}
+
+@keyframes glow-breathe-red {
+
+    0%,
+    100% {
+        box-shadow: inset 0 0 120px 40px rgba(239, 68, 68, 0.15);
+    }
+
+    50% {
+        box-shadow: inset 0 0 250px 100px rgba(239, 68, 68, 0.35);
+    }
+}
+
+/* === SESSION TITLE === */
 .session-title {
     font-family: var(--font-ui);
-    font-size: 12vw;
-    /* Maximize width usage */
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 6vw;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
     text-align: center;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 0.05em;
 
-    /* Position Top */
+    /* Positioned at top */
     position: absolute;
-    top: 5vh;
-    left: 5vw;
-    right: 5vw;
-    height: 15vh;
+    top: 6vh;
+    left: 8vw;
+    right: 8vw;
+    height: 12vh;
     z-index: 10;
 
     display: flex;
     align-items: center;
     justify-content: center;
+
+    /* Subtle animation on load */
+    opacity: 0;
+    animation: fade-in-title var(--duration-slow) var(--ease-out) forwards;
+    animation-delay: 0.2s;
 }
 
+@keyframes fade-in-title {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === TIMER DISPLAY (The Star) === */
 .timer-display {
     font-family: var(--font-timer);
     font-weight: 700;
@@ -157,43 +180,94 @@ body.overtime-mode .overtime-message {
     line-height: 1;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
-    /* Critical for Oswald to avoid jitter */
+    letter-spacing: -0.02em;
 
     /* Absolute Center */
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-
-    /* Ensure it doesn't overlap title */
     z-index: 5;
 
     /* Initial Size */
-    font-size: 25vw;
+    font-size: 28vw;
+
+    /* Smooth transitions */
+    transition:
+        opacity var(--duration-normal) var(--ease-out),
+        transform var(--duration-normal) var(--ease-out);
 }
 
+/* Timer entry animation */
+.timer-display.entering {
+    animation: timer-enter var(--duration-slow) var(--ease-out);
+}
 
+@keyframes timer-enter {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.95);
+    }
 
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Long duration format */
 .timer-display.long-text {
-    font-size: 18vw;
-    /* Smaller for H:MM:SS */
+    font-size: 20vw;
 }
 
+/* === OVERTIME MESSAGE === */
 .overtime-message {
     font-family: var(--font-ui);
-    font-size: 20vw;
+    font-size: 18vw;
     font-weight: 900;
     color: #FFFFFF;
     text-align: center;
-    animation: none;
     white-space: nowrap;
     text-transform: uppercase;
     line-height: 1;
+    letter-spacing: 0.02em;
 
-    /* Absolute Center (Fix for v1.1.5) */
+    /* Absolute Center */
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
+
+    /* Dissolve-in animation */
+    opacity: 0;
+    animation: overtime-dissolve-in 1s var(--ease-out) forwards;
+}
+
+@keyframes overtime-dissolve-in {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+        filter: blur(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* Hidden state (using [hidden] attribute) */
+.overtime-message[hidden] {
+    display: block !important;
+    opacity: 0;
+    pointer-events: none;
+    animation: none;
+}
+
+/* Timer fade out when overtime */
+body.overtime-mode .timer-display {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
 }
