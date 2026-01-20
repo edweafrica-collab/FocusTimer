@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Operator Dashboard - FocusTimer</title>
+    <!-- Local fonts - fully offline -->
+    <link href="../assets/fonts/inter.css" rel="stylesheet" />
+    <link href="../assets/fonts/space-grotesk.css" rel="stylesheet" />
+    <link href="../assets/fonts/material-symbols.css" rel="stylesheet" />
+    <link href="../styles/output.css" rel="stylesheet" />
+    <!-- We need to see where main.js expects this file to be relative to src/timer.js if we use it? 
+     Actually, main.js usually preloads preload.js which exposes APIs.
+     The old renderer.js used `const timer = new FocusTimer();` implying FocusTimer is globally available or imported.
+     Looking at old index.html (Step 70), there was no `src` import for FocusTimer. 
+     Looking at old renderer.js (Step 211), line 1: `const timer = new FocusTimer();`.
+     Use view_file on preload.js to see how FocusTimer is exposed.
+-->
+</head>
+
+<body
+    class="bg-background-dark text-white font-display min-h-screen flex flex-col overflow-hidden selection:bg-primary selection:text-black">
+    <header
+        class="w-full h-16 border-b border-[#2c2c2c] flex items-center justify-between px-6 bg-surface-dark/50 backdrop-blur-sm fixed top-0 z-50">
+        <div class="flex items-center gap-3 w-1/4">
+            <div class="size-8 rounded bg-primary/20 flex items-center justify-center text-primary">
+                <span class="material-symbols-outlined text-[20px]">timer</span>
+            </div>
+            <h1 class="font-bold text-lg tracking-tight hidden md:block">FocusTimer</h1>
+        </div>
+        <div class="flex-1 flex justify-center">
+            <div class="relative group w-full max-w-md">
+                <div
+                    class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-muted group-focus-within:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </div>
+                <input id="session-title-input"
+                    class="w-full bg-transparent border-b border-transparent hover:border-[#333] focus:border-primary text-center text-sm font-medium py-2 px-10 focus:outline-none transition-all placeholder-zinc-600 text-zinc-300 focus:text-white"
+                    placeholder="Add Session Title" type="text" />
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-4 w-1/4">
+            <button id="btn-show-viewer"
+                class="hidden md:flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-full text-xs font-medium border border-zinc-700 transition-colors"
+                title="Open Viewer Window">
+                <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+                <span>Viewer</span>
+            </button>
+            <div
+                class="hidden md:flex items-center gap-2 bg-[#1f2923] border border-[#2a3830] px-3 py-1.5 rounded-full">
+                <div class="size-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span class="text-xs font-medium text-green-400">Online</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 pt-20 px-6 pb-6 grid grid-cols-1 lg:grid-cols-12 gap-6 h-screen">
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            <!-- Timer Card -->
+            <div
+                class="bg-surface-dark border border-zinc-800 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
+                <!-- Status Badge -->
+                <div class="absolute top-6 right-6">
+                    <span id="connection-status" class="text-xs font-bold uppercase tracking-wider text-zinc-600">
+                        <span id="connection-dot" class="inline-block w-2 h-2 rounded-full bg-zinc-600 mr-2"></span>
+                        Disconnected
+                    </span>
+                </div>
+
+                <!-- Main Timer Display -->
+                <div class="relative group cursor-pointer mb-8 select-none" id="timer-container"
+                    title="Click to Edit Time">
+                    <!-- Hover Edit Cue -->
+                    <div
+                        class="absolute -top-8 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span
+                            class="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-zinc-800/80 text-xs text-zinc-400 font-medium tracking-widest uppercase border border-zinc-700">
+                            <span class="material-symbols-outlined text-[14px]">edit</span>
+                            <span>Edit Time</span>
+                        </span>
+                    </div>
+
+                    <div id="main-timer"
+                        class="font-timer text-[7rem] leading-none font-bold tracking-tighter text-white tabular-nums select-none transition-all timer-glow">
+                        00:00:00
+                    </div>
+
+                    <!-- Manual Input (Absolutley positioned to match readout) -->
+                    <input type="text" id="manual-time-input"
+                        class="hidden absolute inset-0 w-full h-full bg-surface-dark/50 backdrop-blur-sm text-[7rem] leading-none font-bold tracking-tighter text-white text-center focus:outline-none rounded-2xl p-0 m-0 z-10 font-timer caret-primary selection:bg-primary/30 selection:text-white placeholder-zinc-700"
+                        placeholder="00:00" autocomplete="off">
+                </div>
+
+                <!-- Controls -->
+                <div class="flex flex-col items-center gap-6 w-full max-w-md">
+                    <!-- Primary Actions -->
+                    <div class="flex items-center gap-4 w-full justify-center">
+                        <button id="btn-start"
+                            class="flex-1 h-16 bg-primary hover:bg-primary-hover active:scale-[0.98] text-white rounded-2xl flex items-center justify-center gap-2 font-bold text-xl shadow-lg shadow-primary/20 transition-all">
+                            <span id="btn-start-icon"
+                                class="material-symbols-outlined text-3xl fill-current">play_arrow</span>
+                            <span id="btn-start-text">Start</span>
+                        </button>
+                        <button id="btn-reset"
+                            class="h-16 w-16 bg-surface-dark border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600 active:scale-[0.95] text-zinc-300 rounded-2xl flex items-center justify-center transition-all group"
+                            title="Reset Timer">
+                            <span
+                                class="material-symbols-outlined text-2xl group-hover:rotate-[-180deg] transition-transform duration-500">restart_alt</span>
+                        </button>
+                    </div>
+
+                    <!-- Quick Add Presets -->
+                    <div class="w-full space-y-3">
+                        <div class="grid grid-cols-4 gap-2">
+                            <button
+                                class="preset-btn bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white py-3 rounded-xl text-sm font-semibold transition-all border border-transparent hover:border-zinc-600"
+                                data-time="1">+1m</button>
+                            <button
+                                class="preset-btn bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white py-3 rounded-xl text-sm font-semibold transition-all border border-transparent hover:border-zinc-600"
+                                data-time="5">+5m</button>
+                            <button
+                                class="preset-btn bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white py-3 rounded-xl text-sm font-semibold transition-all border border-transparent hover:border-zinc-600"
+                                data-time="10">+10m</button>
+                            <button
+                                class="preset-btn bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white py-3 rounded-xl text-sm font-semibold transition-all border border-transparent hover:border-zinc-600"
+                                data-time="30">+30m</button>
+                        </div>
+                        <!-- Decrement Presets -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                class="preset-btn bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-red-400 py-2 rounded-xl text-xs font-semibold transition-all border border-zinc-800/50 hover:border-red-900/30"
+                                data-time="-1">-1m</button>
+                            <button
+                                class="preset-btn bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-red-400 py-2 rounded-xl text-xs font-semibold transition-all border border-zinc-800/50 hover:border-red-900/30"
+                                data-time="-5">-5m</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="lg:col-span-7 flex flex-col h-full overflow-hidden pb-4">
+            <div
+                class="flex flex-col h-full bg-[#1e1e1e] border border-[#2c2c2c] rounded-3xl shadow-xl overflow-hidden">
+                <div
+                    class="px-6 py-5 border-b border-[#2c2c2c] flex items-center justify-between bg-surface-dark/90 backdrop-blur-md sticky top-0 z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-zinc-800 rounded-lg">
+                            <span class="material-symbols-outlined text-zinc-400 text-[20px]">calendar_view_day</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-white tracking-tight">Run of Show</h3>
+                    </div>
+                    <div class="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-lg border border-zinc-800">
+                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Auto-Advance</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input id="auto-advance-toggle" checked="" class="sr-only peer" type="checkbox" value="" />
+                            <div
+                                class="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                <div id="events-container" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-1">
+                    <!-- Empty state - will be replaced when events are added -->
+                    <div id="empty-state" class="text-center text-zinc-600 py-20 flex flex-col items-center">
+                        <div class="size-20 rounded-full bg-zinc-800/50 flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-4xl opacity-50">event_note</span>
+                        </div>
+                        <p class="font-medium text-lg text-zinc-400">No events scheduled</p>
+                        <p class="text-sm mt-1 text-zinc-500">Plan your session flow here</p>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-[#2c2c2c] bg-zinc-900/80 backdrop-blur-sm">
+                    <button id="btn-add-event"
+                        class="w-full py-4 border border-dashed border-zinc-700 hover:border-primary/50 hover:bg-primary/5 hover:text-primary-hover rounded-xl text-zinc-400 font-semibold flex items-center justify-center gap-2 transition-all group">
+                        <span
+                            class="material-symbols-outlined transition-transform group-hover:scale-110">add_circle</span>
+                        Add Event to Schedule
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Event Modal -->
+    <dialog id="event-modal" class="bg-transparent p-0 w-full max-w-md backdrop:bg-black/60 backdrop:backdrop-blur-sm">
+        <form id="event-form" method="dialog"
+            class="bg-surface-dark border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden text-white transform transition-all scale-100 p-0">
+            <div class="px-6 py-4 border-b border-zinc-700 flex justify-between items-center bg-zinc-900/50">
+                <h3 id="modal-title" class="text-lg font-bold">Add New Event</h3>
+                <button type="button" id="btn-close-modal" class="text-zinc-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Event Title</label>
+                    <input type="text" name="title" required
+                        class="w-full bg-black/20 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                        placeholder="e.g. Opening Remarks">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Duration (min)</label>
+                        <input type="number" name="duration" required min="1"
+                            class="w-full bg-black/20 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                            placeholder="15">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Speaker</label>
+                        <input type="text" name="speaker"
+                            class="w-full bg-black/20 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-600 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                            placeholder="Optional">
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-zinc-900/50 border-t border-zinc-700 flex justify-end gap-3">
+                <button type="button" id="btn-cancel-modal"
+                    class="px-5 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">Cancel</button>
+                <button type="submit"
+                    class="px-5 py-2.5 rounded-lg text-sm font-bold bg-primary hover:bg-primary-hover text-white transition-colors shadow-lg shadow-primary/20">Save
+                    Event</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Single Screen Warning Modal -->
+    <dialog id="warning-modal"
+        class="bg-transparent p-0 w-[90%] max-w-md backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+        <div
+            class="bg-surface-dark border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden text-white transform transition-all scale-100 p-0 text-center">
+            <div class="p-8 flex flex-col items-center gap-4">
+                <div class="size-16 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 mb-2">
+                    <span class="material-symbols-outlined text-3xl">warning</span>
+                </div>
+                <h3 class="text-xl font-bold">Single Display Detected</h3>
+                <p class="text-zinc-400 text-sm leading-relaxed">
+                    The Viewer Window will take over your entire screen.
+                    <br /><br />
+                    Press <kbd
+                        class="px-2 py-1 rounded bg-zinc-800 border border-zinc-700 text-xs font-mono text-zinc-300">ESC</kbd>
+                    at any time to return to the Dashboard.
+                </p>
+            </div>
+            <div class="px-6 py-4 bg-zinc-900/50 border-t border-zinc-700 flex gap-3">
+                <button id="btn-cancel-warning"
+                    class="flex-1 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                    Cancel
+                </button>
+                <button id="btn-confirm-warning"
+                    class="flex-1 py-3 rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white transition-colors shadow-lg shadow-primary/20">
+                    Proceed
+                </button>
+            </div>
+        </div>
+    </dialog>
+    <script src="../shared/timer.js"></script>
+    <script src="./renderer.js"></script>
+</body>
+
+</html>

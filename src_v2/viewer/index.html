@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black overflow-hidden h-screen w-screen">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusTime Viewer</title>
+    <!-- Tailwind Output -->
+    <link href="../styles/output.css" rel="stylesheet" />
+
+    <!-- Fonts -->
+    <!-- Oswald (Google Fonts CDN as fallback/interim) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+
+    <link href="../assets/fonts/inter.css" rel="stylesheet" />
+    <link href="../assets/fonts/space-grotesk.css" rel="stylesheet" />
+</head>
+
+<body
+    class="bg-black text-white flex flex-col items-center justify-center h-full w-full select-none cursor-none relative transition-colors duration-1000 ease-in-out"
+    id="viewer-body">
+
+    <!-- Ambient Glow container -->
+    <div id="ambient-glow"
+        class="absolute inset-0 z-0 opacity-0 transition-opacity duration-1000 ease-in-out pointer-events-none"></div>
+
+    <!-- Main Content -->
+    <main class="relative z-10 flex flex-col items-center justify-center w-full h-full text-center">
+        <!-- Session Title (Top) -->
+        <div class="absolute top-8 left-0 right-0 px-8 flex justify-center overflow-hidden">
+            <h2 id="session-title"
+                class="text-zinc-400 font-display text-[3vw] font-bold uppercase tracking-widest opacity-0 transition-opacity duration-700 whitespace-nowrap">
+                <!-- Content Injected via JS -->
+            </h2>
+        </div>
+
+        <!-- Timer Display -->
+        <div id="timer-container" class="relative">
+            <h1 id="timer-display"
+                class="font-viewer text-[35vw] font-bold leading-none tracking-tight tabular-nums transition-all duration-300">
+                00:00
+            </h1>
+
+            <!-- Overtime Message (Hidden by default) -->
+            <h1 id="overtime-display"
+                class="font-viewer text-[25vw] font-bold leading-none tracking-tight text-accent hidden animate-pulse-slow">
+                TIME UP
+            </h1>
+        </div>
+
+        <!-- Speaker Name (Bottom) -->
+        <div class="absolute bottom-12 left-0 right-0 px-8 flex justify-center">
+            <h3 id="current-speaker"
+                class="text-zinc-500 font-display text-[2vw] font-medium tracking-wide opacity-0 transition-opacity duration-700">
+                <!-- Content Injected via JS -->
+            </h3>
+        </div>
+    </main>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>

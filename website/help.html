@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>FocusTimer - Help & Support</title>
+    <meta name="description" content="FocusTimer help, FAQ, and support options.">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+
+    <!-- Design & Fonts -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- Custom Styles & Config -->
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4CAF50",
+                        "primary-dark": "#43A047",
+                    },
+                    fontFamily: {
+                        display: ["Oswald", "sans-serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        .faq-item {
+            padding-bottom: 1.75rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .faq-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .faq-question {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .faq-answer {
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .faq-answer a {
+            color: #4CAF50;
+            text-decoration: underline;
+        }
+
+        .faq-answer a:hover {
+            color: #43A047;
+        }
+
+        .support-card {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .support-card h4 {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .support-card p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .support-card .material-icons {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-700 font-sans min-h-screen">
+
+    <!-- Header -->
+    <header class="py-6 px-4">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <a href="index.html"
+                class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors">
+                <span class="material-icons text-2xl text-primary">hourglass_bottom</span>
+                <span class="font-display text-xl font-light tracking-wide">FocusTimer</span>
+            </a>
+            <nav class="flex space-x-6 text-sm">
+                <a href="#" class="text-primary font-medium">Help</a>
+                <a href="release-notes.html" class="text-gray-500 hover:text-gray-800 transition-colors">Release
+                    Notes</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 py-8">
+
+        <h1 class="font-display text-3xl font-light text-center text-gray-800 mb-10 tracking-wide">Help & Support</h1>
+
+        <!-- FAQ Section -->
+        <section class="mb-12">
+            <h2 class="text-xl font-semibold text-gray-700 mb-6 pb-2">Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <h3 class="faq-question">I found a bug or want to request a feature.</h3>
+                <p class="faq-answer">
+                    Open an issue on our <a href="https://github.com/edweafrica-collab/FocusTimer/issues"
+                        target="_blank" rel="noopener">GitHub repository</a>.
+                    We read every issue and appreciate detailed bug reports.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Does FocusTimer work on Mac or Linux?</h3>
+                <p class="faq-answer">
+                    Currently, FocusTimer is built for Windows 10/11. Mac and Linux versions are on our roadmap.
+                    If you'd like to help port the app, see the collaboration section below!
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Will FocusTimer slow down my computer?</h3>
+                <p class="faq-answer">
+                    No. FocusTimer is incredibly lightweight. It uses minimal CPU and memory, even when the timer is
+                    running.
+                    It's designed to stay out of your way.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Can I customize the warning colors?</h3>
+                <p class="faq-answer">
+                    Not yet, but it's on our feature list! Currently, the timer shows yellow at 5 minutes remaining
+                    and red when time is up. Custom themes are coming in a future release.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">The viewer window isn't showing on my second monitor.</h3>
+                <p class="faq-answer">
+                    Make sure your second display is detected by Windows. FocusTimer will prompt you to move the viewer
+                    to a secondary screen if one is available. You can also manually drag the viewer window.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">Can I use FocusTimer for free at my church/conference/school?</h3>
+                <p class="faq-answer">
+                    Absolutely! FocusTimer is free for personal, educational, and non-profit use.
+                    We built it specifically for churches, conferences, classrooms, and live streams.
+                </p>
+            </div>
+
+            <div class="faq-item">
+                <h3 class="faq-question">I have a different question.</h3>
+                <p class="faq-answer">
+                    Send us an email at <a href="mailto:focustimer@example.com">focustimer@example.com</a>
+                    and we'll get back to you as soon as we can.
+                </p>
+            </div>
+        </section>
+
+        <!-- Support Section -->
+        <section class="mb-12">
+            <h2 class="text-xl font-semibold text-gray-700 mb-6 pb-2">Support the Project</h2>
+
+            <div class="support-card">
+                <h4><span class="material-icons">favorite</span> Financial Support</h4>
+                <p>
+                    FocusTimer is free, but building and maintaining it takes time. If you find it useful,
+                    consider supporting us:
+                </p>
+                <ul class="mt-3 space-y-2 text-gray-600 text-sm">
+                    <li>☕ <a href="#" class="text-primary hover:text-primary-dark">Buy us a coffee</a> — Small one-time
+                        contribution</li>
+                    <li>💛 <a href="#" class="text-primary hover:text-primary-dark">Become a Patron</a> — Monthly
+                        support for ongoing development</li>
+                    <li>💼 <a href="#" class="text-primary hover:text-primary-dark">Sponsor on GitHub</a> — Support via
+                        GitHub Sponsors</li>
+                </ul>
+            </div>
+
+            <div class="support-card">
+                <h4><span class="material-icons">code</span> Collaborate & Contribute</h4>
+                <p>
+                    FocusTimer is open source and we welcome contributions! Whether you're a developer,
+                    designer, or just have great ideas:
+                </p>
+                <ul class="mt-3 space-y-2 text-gray-600 text-sm">
+                    <li>🔧 <a href="https://github.com/edweafrica-collab/FocusTimer" target="_blank" rel="noopener"
+                            class="text-primary hover:text-primary-dark">View the source on GitHub</a></li>
+                    <li>📝 Submit pull requests for bug fixes or new features</li>
+                    <li>🌍 Help translate FocusTimer to other languages</li>
+                    <li>🎨 Contribute theme designs or UI improvements</li>
+                </ul>
+            </div>
+
+            <div class="support-card">
+                <h4><span class="material-icons">groups</span> Invite Us to Your Event</h4>
+                <p>
+                    Want to see FocusTimer in action at your live event? We'd love to help!
+                    Our team is available for:
+                </p>
+                <ul class="mt-3 space-y-2 text-gray-600 text-sm">
+                    <li>🎤 <strong>Live Demos</strong> — We'll show your team how to get the most out of FocusTimer</li>
+                    <li>🏛️ <strong>Conference Workshops</strong> — Training sessions for AV and production teams</li>
+                    <li>⛪ <strong>Church Tech Consultations</strong> — Help setting up FocusTimer for worship services
+                    </li>
+                    <li>📧 Contact us at <a href="mailto:events@focustimer.app"
+                            class="text-primary hover:text-primary-dark">events@focustimer.app</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Quick Links -->
+        <section>
+            <h2 class="text-xl font-semibold text-gray-700 mb-6 pb-2">Quick Links</h2>
+            <div class="flex flex-wrap gap-4 text-sm">
+                <a href="index.html" class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">← Back
+                    to Home</a>
+                <a href="release-notes.html"
+                    class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">Release Notes</a>
+                <a href="https://github.com/edweafrica-collab/FocusTimer" target="_blank" rel="noopener"
+                    class="px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">GitHub Repo</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 px-4 text-center text-sm text-gray-400">
+        <p>© 2026 FocusTimer. Built for presenters who are tired of hand signals.</p>
+        <p class="mt-2">
+            <a href="index.html" class="text-primary hover:text-primary-dark transition-colors">← Back to Home</a>
+        </p>
+    </footer>
+
+</body>
+
+</html>

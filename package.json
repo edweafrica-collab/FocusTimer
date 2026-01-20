@@ -1,10 +1,12 @@
 {
   "name": "focustimer",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "build:css": "tailwindcss -i ./src_v2/styles/input.css -o ./src_v2/styles/output.css",
+    "watch:css": "tailwindcss -i ./src_v2/styles/input.css -o ./src_v2/styles/output.css --watch"
   },
   "keywords": [],
   "author": "",
@@ -27,7 +29,10 @@
     ]
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.23",
     "electron": "^39.2.7",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19"
   }
 }

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chaos Test (Gremlins)</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/gremlins.js"></script>
+</head>
+
+<body>
+    <!-- Replicating Dashboard Structure -->
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <h1>FocusTime (CHAOS MODE)</h1>
+                <button id="btn-show-viewer" hidden>Show Screen</button>
+            </div>
+            <div id="connection-status" class="status-badge">Checking Displays...</div>
+        </header>
+
+        <section class="timer-display">
+            <div id="main-timer" class="time-readout">00:00</div>
+            <div id="timer-status" class="status-text">IDLE</div>
+        </section>
+
+        <section class="controls-section">
+            <div class="input-group">
+                <label>Set Duration</label>
+                <div class="time-inputs">
+                    <input type="number" id="input-min" placeholder="MM" min="0" max="999">
+                    <span>:</span>
+                    <input type="number" id="input-sec" placeholder="SS" min="0" max="59">
+                </div>
+            </div>
+
+            <div class="presets">
+                <button class="preset-btn" data-time="5">5m</button>
+                <button class="preset-btn" data-time="10">10m</button>
+                <button class="preset-btn" data-time="15">15m</button>
+                <button class="preset-btn" data-time="20">20m</button>
+                <button class="preset-btn" data-time="30">30m</button>
+                <button class="preset-btn" data-time="45">45m</button>
+                <button class="preset-btn" data-time="60">60m</button>
+                <button class="preset-btn" data-time="90">90m</button>
+            </div>
+
+            <div class="transport-controls">
+                <button id="btn-start" class="transport-btn start">START</button>
+                <button id="btn-pause" class="transport-btn pause" hidden>PAUSE</button>
+                <button id="btn-stop" class="transport-btn stop">RESET</button>
+            </div>
+
+            <div class="adjust-controls">
+                <button class="adjust-btn" data-adjust="60">+1m</button>
+                <button class="adjust-btn" data-adjust="-60">-1m</button>
+                <button class="adjust-btn" data-adjust="10">+10s</button>
+                <button class="adjust-btn" data-adjust="-10">-10s</button>
+            </div>
+        </section>
+
+        <section class="meta-section">
+            <label>Session Title (Optional)</label>
+            <div class="input-row title-controls">
+                <input type="text" id="session-title" placeholder="e.g. Keynote Speech" class="input-flex">
+                <button id="btn-publish-title" class="action-btn btn-publish">SHOW</button>
+                <button id="btn-clear-title" class="secondary-btn">CLEAR</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modals (Hidden) -->
+    <div id="recovery-modal" class="modal-overlay" hidden>
+        <div class="modal-content">
+            <h2>Previous Session Found</h2>
+            <p>Do you want to resume?</p>
+            <div class="modal-actions">
+                <button id="btn-resume">Resume</button>
+                <button id="btn-discard" class="secondary-btn">Start New</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-modal" class="modal-overlay" hidden>
+        <div class="modal-content">
+            <h2>Secondary Display Detected</h2>
+            <button id="btn-screen-yes">Yes</button>
+            <button id="btn-screen-no">No</button>
+        </div>
+    </div>
+
+    <div id="single-screen-modal" class="modal-overlay" hidden>
+        <div class="modal-content">
+            <h3>Fullscreen Mode</h3>
+            <button id="btn-single-launch">Launch</button>
+            <button id="btn-single-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <!-- MOCK ELECTRON API -->
+    <script>
+        console.log("Initializing Mock Electron API...");
+
+        window.electronAPI = {
+            startTimer: () => console.log('Mock: startTimer'),
+            pauseTimer: () => console.log('Mock: pauseTimer'),
+            stopTimer: () => console.log('Mock: stopTimer'),
+            updateTimer: (t) => console.log('Mock: updateTimer', t),
+            setDuration: (m, s) => console.log('Mock: setDuration', m, s),
+            broadcastWarning: (l) => console.log('Mock: broadcastWarning', l),
+            checkScreens: () => Promise.resolve([]), // Simulate 0 screens or 1
+            getScreens: () => Promise.resolve([{ id: 1 }]),
+            launchViewer: () => console.log('Mock: launchViewer'),
+            verifyAppClose: () => console.log('Mock: verifyAppClose'),
+            showViewer: () => console.log('Mock: showViewer'),
+            sendDashboardReady: () => console.log('Mock: sendDashboardReady'),
+            requestPreserveState: (s) => console.log('Mock: requestPreserveState', s),
+
+            // Event Listeners (Mock)
+            onTimerUpdate: (cb) => {
+                // Don't auto-fire, or maybe simulate one tick?
+                window.mockUpdateUI = cb;
+            },
+            onStatusChange: (cb) => { window.mockStatusUI = cb; },
+            onStartSequence: (cb) => { },
+            onScreensChange: (cb) => { }
+        };
+    </script>
+
+    <!-- REAL APP LOGIC -->
+    <script src="../shared/timer.js"></script>
+    <script src="renderer.js"></script>
+
+    <!-- GREMLINS LAUNCHER -->
+    <script>
+        window.onload = function () {
+            setTimeout(() => {
+                console.log("RELEASE THE GREMLINS!");
+                const horde = gremlins.createHorde({
+                    species: [
+                        gremlins.species.clicker(),
+                        gremlins.species.formFiller(),
+                        gremlins.species.typer()
+                    ],
+                    mogwais: [
+                        gremlins.mogwais.alert(), // Log alerts instead of blocking
+                        gremlins.mogwais.fps()
+                    ],
+                    strategies: [gremlins.strategies.distribution({
+                        delay: 10, // Very fast interactions (10ms)
+                        nb: 1000   // 1000 attack steps
+                    })]
+                });
+
+                horde.on('stop', () => {
+                    console.log('GREMLINS TEST COMPLETE - SURVIVED');
+                    // Add a visible element for the browser agent to see
+                    const doneEl = document.createElement('div');
+                    doneEl.id = 'test-complete';
+                    doneEl.innerText = 'TEST COMPLETE';
+                    doneEl.style.position = 'fixed';
+                    doneEl.style.top = '0';
+                    doneEl.style.left = '0';
+                    doneEl.style.background = 'lime';
+                    doneEl.style.fontSize = '50px';
+                    document.body.appendChild(doneEl);
+                });
+
+                horde.unleash();
+            }, 1000);
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Stress Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .log-panel {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #333;
+            padding: 10px;
+            background: #000;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            display: inline-block;
+            padding: 10px;
+            border: 1px solid #444;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🤖 MEMORY LEAK ROBOT</h1>
+    <div id="stats">
+        <div class="stat-box">Cycles: <span id="cycle-count">0</span>/1000</div>
+        <div class="stat-box">Start RAM: <span id="start-ram">--</span> MB</div>
+        <div class="stat-box">Current RAM: <span id="curr-ram">--</span> MB</div>
+        <div class="stat-box">Delta: <span id="delta-ram">--</span> MB</div>
+    </div>
+
+    <button id="btn-start-test" class="btn-start-test">START ROBOT</button>
+    <div id="result-display" class="result-display"></div>
+
+    <div class="log-panel" id="logs"></div>
+
+    <!-- Hidden Dashboard Elements for Logic -->
+    <div class="hidden-dashboard" aria-hidden="true">
+        <div id="main-timer"></div>
+        <div id="timer-status"></div>
+        <input id="input-min" aria-label="Minutes"><input id="input-sec" aria-label="Seconds"><button id="btn-start"
+            aria-label="Start">Start</button><button id="btn-stop" aria-label="Stop">Stop</button>
+        <button id="btn-pause" aria-label="Pause">Pause</button>
+        <div class="presets"></div>
+        <div class="adjust-controls"></div>
+        <input id="session-title" aria-label="Session Title"><button id="btn-publish-title"
+            aria-label="Publish Title">Pub</button><button id="btn-clear-title" aria-label="Clear Title">Clear</button>
+        <button id="btn-show-viewer" aria-label="Show Viewer">Viewer</button>
+        <div id="connection-status"></div>
+        <div id="single-screen-modal"><button id="btn-single-launch" aria-label="Launch">Launch</button><button
+                id="btn-single-cancel" aria-label="Cancel">Cancel</button>
+        </div>
+        <div id="screen-modal"><button id="btn-screen-yes" aria-label="Yes">Yes</button><button id="btn-screen-no"
+                aria-label="No">No</button></div>
+        <div id="recovery-modal"><button id="btn-resume" aria-label="Resume">Resume</button><button id="btn-discard"
+                aria-label="Discard">Discard</button></div>
+    </div>
+
+    <!-- MOCK ELECTRON API -->
+    <script>
+        window.electronAPI = {
+            sendTimerUpdate: () => { },
+            onTimerUpdate: () => { },
+            sendWarningUpdate: () => { },
+            onWarningUpdate: () => { },
+            getScreens: () => Promise.resolve([]),
+            launchViewer: () => { },
+            onRequestStateSync: () => { },
+            saveState: () => { },
+            loadState: () => Promise.resolve({}),
+            sendViewerEscape: () => { },
+            onAppClosing: () => { },
+            sendCloseResult: () => { }
+        };
+    </script>
+    <script src="../shared/timer.js"></script>
+    <script src="renderer.js"></script>
+
+    <script>
+        const logs = document.getElementById('logs');
+        function log(msg) {
+            const div = document.createElement('div');
+            div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // Get Memory Usage (if supported)
+        function getMemory() {
+            if (performance && performance.memory) {
+                return Math.round(performance.memory.usedJSHeapSize / 1024 / 1024 * 100) / 100;
+            }
+            return 0; // Not supported in all browsers
+        }
+
+        let startMem = 0;
+        let cycles = 0;
+        const targetCycles = 1000;
+
+        document.getElementById('btn-start-test').addEventListener('click', async () => {
+            log('Starting Memory Test...');
+            // Need to allow browser GC to settle?
+            await new Promise(r => setTimeout(r, 500));
+
+            startMem = getMemory();
+            document.getElementById('start-ram').innerText = startMem;
+            log(`Baseline Memory: ${startMem} MB`);
+
+            runCycle();
+        });
+
+        function runCycle() {
+            if (cycles >= targetCycles) {
+                finish();
+                return;
+            }
+
+            // SIMULATE USER ACTIONS
+            // 1. Set Duration (Logic)
+            // 2. Start
+            // 3. Reset
+
+            // We interact with `els` from renderer.js implicitly by triggering events or calling methods?
+            // Actually renderer.js sets up listeners. Let's trigger clicks programmatically.
+
+            // Step 1: Click 5m Preset
+            // (We need to find the button, renderer.js attached listeners to classes)
+            // But checking DOM queries might be fragile here.
+            // Let's use the underlying `timer` object if accessible, OR Mock clicks.
+            // Since `renderer.js` isn't exporting `timer`, let's just create a NEW timer instance for stress testing
+            // NO, we want to test LEAKS in the Renderer.js listeners and DOM updates.
+            // So we MUST click the buttons.
+
+            // Reset
+            document.getElementById('btn-stop').click();
+
+            // Start
+            document.getElementById('btn-start').click();
+
+            cycles++;
+            document.getElementById('cycle-count').innerText = cycles;
+
+            if (cycles % 100 === 0) {
+                const curr = getMemory();
+                document.getElementById('curr-ram').innerText = curr;
+                document.getElementById('delta-ram').innerText = Math.round((curr - startMem) * 100) / 100;
+            }
+
+            // Run next cycle immediately (using setTimeout to allow UI thread to breathe/render)
+            setTimeout(runCycle, 10);
+        }
+
+        function finish() {
+            const endMem = getMemory();
+            const delta = endMem - startMem;
+            log(`Test Finished.`);
+            log(`Start: ${startMem} MB`);
+            log(`End: ${endMem} MB`);
+            log(`Delta: ${delta} MB`);
+
+            const resultEl = document.getElementById('result-display');
+            if (delta > 10) { // 10MB growth allowed?
+                resultEl.innerText = "FAIL: LEAK DETECTED";
+                resultEl.style.color = "red";
+            } else {
+                resultEl.innerText = "PASS: NO LEAK DETECTED";
+                resultEl.style.color = "lime";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -62,7 +62,7 @@ function createDashboard() {
         show: false
     });
 
-    dashboardWindow.loadFile(path.join(__dirname, 'src', 'dashboard', 'index.html'));
+    dashboardWindow.loadFile(path.join(__dirname, 'src_v2', 'dashboard', 'index.html'));
 
     dashboardWindow.once('ready-to-show', () => {
         dashboardWindow.show();
@@ -151,7 +151,7 @@ function createViewer(displayId = null) {
         title: 'FocusTime - Viewer',
     });
 
-    viewerWindow.loadFile(path.join(__dirname, 'src', 'viewer', 'index.html'));
+    viewerWindow.loadFile(path.join(__dirname, 'src_v2', 'viewer', 'index.html'));
 
     // Viewer Silent Recovery
     viewerWindow.webContents.on('render-process-gone', (event, details) => {

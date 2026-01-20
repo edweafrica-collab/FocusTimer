@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>FocusTimer - Release Notes</title>
+    <meta name="description" content="FocusTimer release notes and version history.">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+
+    <!-- Design & Fonts -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- Custom Styles & Config -->
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4CAF50",
+                        "primary-dark": "#43A047",
+                    },
+                    fontFamily: {
+                        display: ["Oswald", "sans-serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        .version-block {
+            padding-bottom: 2.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .version-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .version-title {
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .version-date {
+            color: #4CAF50;
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-heading {
+            font-weight: 600;
+            color: #555;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .change-list {
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .change-list li {
+            margin-bottom: 0.35rem;
+        }
+
+        .funny-note {
+            color: #4CAF50;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-700 font-sans min-h-screen">
+
+    <!-- Header -->
+    <header class="py-6 px-4">
+        <div class="max-w-2xl mx-auto flex justify-between items-center">
+            <a href="index.html"
+                class="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors">
+                <span class="material-icons text-2xl text-primary">hourglass_bottom</span>
+                <span class="font-display text-xl font-light tracking-wide">FocusTimer</span>
+            </a>
+            <nav class="flex space-x-6 text-sm">
+                <a href="help.html" class="text-gray-500 hover:text-gray-800 transition-colors">Help</a>
+                <a href="#" class="text-primary font-medium">Release Notes</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 py-8">
+
+        <!-- Version 1.1.6 -->
+        <div class="version-block">
+            <h2 class="version-title">Version 1.1.6</h2>
+            <p class="version-date">11 January 2026</p>
+
+            <p class="change-list mb-4">
+                Major update bringing visual polish and improved reliability for live events.
+            </p>
+
+            <h4 class="section-heading">New Features:</h4>
+            <ul class="change-list list-disc pl-5">
+                <li><strong>Pulsing Background</strong> — The "TIME UP" state now features an attention-grabbing pulsing
+                    red background.</li>
+                <li><strong>Oswald Font</strong> — Switched to the bold Oswald typeface for better readability on
+                    projectors.</li>
+                <li><strong>Input Reset</strong> — Time inputs now reset properly when starting a new session.</li>
+                <li><strong>Robust Close</strong> — Fixed an issue where the viewer window didn't close reliably.</li>
+            </ul>
+
+            <h4 class="section-heading">Also in This Release:</h4>
+            <ul class="change-list list-disc pl-5">
+                <li>Splash screen improvements</li>
+                <li>Dashboard layout refinements</li>
+                <li>PRD v2.0 documentation</li>
+            </ul>
+
+            <h4 class="section-heading">Lessons Learned:</h4>
+            <ul class="change-list list-disc pl-5 funny-note">
+                <li>Always test on an actual projector before a live event.</li>
+                <li>No one reads user feedback forms, but they definitely DM you on Twitter.</li>
+            </ul>
+        </div>
+
+        <!-- Version 1.0.0 -->
+        <div class="version-block">
+            <h2 class="version-title">Version 1.0.0</h2>
+            <p class="version-date">4 January 2026</p>
+
+            <p class="change-list mb-4">
+                This is the initial public release of FocusTimer!
+            </p>
+
+            <h4 class="section-heading">The Origin Story:</h4>
+            <p class="change-list mb-4">
+                FocusTimer was born out of frustration. We've all been there—you're presenting at a live event,
+                and someone starts waving frantically from the back of the room. "Wrap it up!" they mime, while
+                you try to maintain composure. We thought: there has to be a better way. A calmer way.
+                A way that doesn't involve hand signals or panic.
+            </p>
+
+            <h4 class="section-heading">Features:</h4>
+            <ul class="change-list list-disc pl-5">
+                <li><strong>Dual-window system</strong> — Dashboard for control, Viewer for display</li>
+                <li><strong>Quick time presets</strong> — 5, 10, 15, 20, 30, 45, 60, 90 minutes</li>
+                <li><strong>Custom time input</strong> — Set any duration you need</li>
+                <li><strong>Warning states</strong> — Yellow at 5 minutes, red when time's up</li>
+                <li><strong>Clean typography</strong> — Large, readable countdown display</li>
+                <li><strong>Always on top</strong> — Viewer stays visible above other windows</li>
+                <li><strong>Dark mode ready</strong> — Easy on the eyes in dim venues</li>
+            </ul>
+
+            <h4 class="section-heading">Built With:</h4>
+            <ul class="change-list list-disc pl-5">
+                <li>Electron for cross-platform desktop support</li>
+                <li>Pure JavaScript, no heavy frameworks</li>
+                <li>Love for presenters everywhere</li>
+            </ul>
+
+            <h4 class="section-heading">Parting Shot:</h4>
+            <p class="change-list funny-note">
+                If you like FocusTimer, share it with your AV team. They'll thank you.
+                Or at least stop waving signs at you.
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 px-4 text-center text-sm text-gray-400">
+        <p>© 2026 FocusTimer. Built for presenters who are tired of hand signals.</p>
+        <p class="mt-2">
+            <a href="index.html" class="text-primary hover:text-primary-dark transition-colors">← Back to Home</a>
+        </p>
+    </footer>
+
+</body>
+
+</html>
