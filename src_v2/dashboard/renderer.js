@@ -6,6 +6,7 @@ const els = {
     timerContainer: document.getElementById('timer-container'),
     timeReadout: document.getElementById('main-timer'),
     timeInput: document.getElementById('manual-time-input'),
+    overtimeIndicator: document.getElementById('overtime-indicator'),
 
     // Buttons
     btnStart: document.getElementById('btn-start'),
@@ -38,7 +39,26 @@ const els = {
     // Warning Modal
     warningModal: document.getElementById('warning-modal'),
     btnCancelWarning: document.getElementById('btn-cancel-warning'),
-    btnConfirmWarning: document.getElementById('btn-confirm-warning')
+    btnConfirmWarning: document.getElementById('btn-confirm-warning'),
+
+    // Next Event Modal
+    nextEventModal: document.getElementById('next-event-modal'),
+    btnStayEvent: document.getElementById('btn-stay-event'),
+    btnProceedEvent: document.getElementById('btn-proceed-event'),
+    nextEventTitle: document.getElementById('next-event-title'),
+    nextEventDuration: document.getElementById('next-event-duration'),
+
+    // Delete Modal
+    deleteEventModal: document.getElementById('delete-event-modal'),
+    btnCancelDelete: document.getElementById('btn-cancel-delete'),
+    btnConfirmDelete: document.getElementById('btn-confirm-delete'),
+    deleteEventTitle: document.getElementById('delete-event-title'),
+
+    // New Screen Modal
+    newScreenModal: document.getElementById('new-screen-modal'),
+    btnIgnoreScreen: document.getElementById('btn-ignore-screen'),
+    btnLaunchScreen: document.getElementById('btn-launch-screen'),
+    newScreenLabel: document.getElementById('new-screen-label')
 };
 
 // State
@@ -207,8 +227,9 @@ function renderEventCard(event, index) {
     // Icon or number
     const iconDiv = document.createElement('div');
     if (isActive) {
+        // Active Event Icon: Changed from 'play_arrow' to 'graphic_eq' (timeline/activity)
         iconDiv.className = `size-10 rounded-full flex items-center justify-center transition-colors ${isPaused ? 'bg-zinc-700 text-zinc-300' : 'bg-primary/20 text-primary'}`;
-        iconDiv.innerHTML = `<span class="material-symbols-outlined">${isPaused ? 'pause' : 'play_arrow'}</span>`;
+        iconDiv.innerHTML = `<span class="material-symbols-outlined">graphic_eq</span>`;
     } else if (isCompleted) {
         iconDiv.className = 'size-10 rounded-full bg-green-900/20 border border-green-900/50 flex items-center justify-center text-green-500';
         iconDiv.innerHTML = '<span class="material-symbols-outlined">check</span>';
@@ -254,10 +275,10 @@ function renderEventCard(event, index) {
     const actions = document.createElement('div');
     actions.className = `flex items-center gap-1 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`;
 
-    if (event.status === 'pending') {
+    if (event.status === 'pending' || isCompleted) {
         actions.innerHTML = `
-            <button class="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Start Event" data-action="start">
-                <span class="material-symbols-outlined text-xl">play_circle</span>
+            <button class="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors" title="${isCompleted ? 'Restart Event' : 'Start Event'}" data-action="start">
+                <span class="material-symbols-outlined text-xl">${isCompleted ? 'replay' : 'play_circle'}</span>
             </button>
             <button class="p-2 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors" title="Edit" data-action="edit">
                 <span class="material-symbols-outlined text-xl">edit</span>
@@ -316,16 +337,17 @@ function setupEventCardListeners(card, event) {
                     startEvent(event.id);
                     break;
                 case 'pause':
-                    timer.pause();
+                    if (timer.status === 'RUNNING') {
+                        timer.pause();
+                    } else {
+                        timer.start();
+                    }
                     break;
                 case 'edit':
                     openModal(event.id);
                     break;
                 case 'delete':
-                    if (confirm(`Delete "${event.title}"?`)) {
-                        EventSchedule.deleteEvent(event.id);
-                        renderEvents();
-                    }
+                    showDeleteModal(event.id);
                     break;
             }
         });
@@ -342,6 +364,35 @@ function startEvent(eventId) {
     renderEvents();
 }
 
+let nextEventIdToStart = null;
+
+function showNextEventModal(nextEvent) {
+    els.nextEventTitle.textContent = nextEvent.title;
+    els.nextEventDuration.textContent = EventSchedule.formatDuration(nextEvent.duration);
+    nextEventIdToStart = nextEvent.id;
+    els.nextEventModal.showModal();
+}
+
+function closeNextEventModal() {
+    els.nextEventModal.close();
+    nextEventIdToStart = null;
+}
+
+// Delete Modal Logic
+let eventIdToDelete = null;
+
+function showDeleteModal(eventId) {
+    eventIdToDelete = eventId;
+    const event = EventSchedule.getEvent(eventId);
+    els.deleteEventTitle.textContent = event ? event.title : 'Event';
+    els.deleteEventModal.showModal();
+}
+
+function closeDeleteModal() {
+    els.deleteEventModal.close();
+    eventIdToDelete = null;
+}
+
 function init() {
     // 1. Timer Callbacks
     timer.callbacks.onTick = (timeStr, ms, warningLevel) => {
@@ -356,18 +407,23 @@ function init() {
     };
 
     // Timer completion callback for auto-advance
+    // Timer completion callback for auto-advance
     timer.callbacks.onComplete = () => {
-        if (EventSchedule.activeEventId && EventSchedule.autoAdvance) {
+        if (EventSchedule.activeEventId) {
             EventSchedule.completeActive();
+            // renderEvents(); // Update "Completed" status immediately? 
+            // Warning: If we re-render, the card changes to "Completed" (Green check). 
+            // But we are still in "Overtime" visually on the timer until user decides.
+            // Let's re-render to show progress.
+            renderEvents();
+
             const nextEvent = EventSchedule.getNextPending();
 
             if (nextEvent) {
-                // Auto-start next event
-                startEvent(nextEvent.id);
-            } else {
-                // No more events, just render completed state
-                renderEvents();
+                // Show Confirmation Modal instad of Auto-start
+                showNextEventModal(nextEvent);
             }
+            // If no next event, we just stay here (Overtime).
         }
     };
 
@@ -440,13 +496,44 @@ function init() {
 
     els.presetBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const min = parseInt(btn.dataset.time);
+            const min = parseFloat(btn.dataset.time); // Support floats (0.5 for 30s)
             const msToAdd = min * 60 * 1000;
 
             if (timer.status === 'IDLE' && timer.remaining <= 0) {
-                if (min > 0) timer.setDuration(min);
+                if (min > 0) timer.setDuration(min); // setDuration handles float mins -> ms? 
+                // Wait, timer.setDuration(mins) uses mins * 60 * 1000. So 0.5 works.
             } else {
                 timer.remaining += msToAdd;
+                // Allow going negative if subtracting? 
+                // "add some preset seconds addition and substration"
+                // Usually subtraction shouldn't go below 0 unless it's overtime adjustment?
+                // Let's keep existing logic: if < 0 -> 0.
+                // UNLESS we are in overtime, where remaining is already <= 0?
+                // If remaining is -10000 (10s overtime), and we add +30s (+30000), it becomes +20000 (20s remaining).
+                // If remaining is -10000 and we subtract -30s (-30000), it becomes -40000.
+
+                // Existing logic:
+                // if (timer.remaining < 0) timer.remaining = 0; 
+                // This prevents overtime from getting deeper? Or prevents it from staying negative?
+                // If I am in overtime (-10s) and I click +1m, I want to extend.
+                // -10s + 60s = 50s. Correct.
+
+                // But my previous code had `if (timer.remaining < 0) timer.remaining = 0;`??
+                // Let's check Step 27 line 450: `if (timer.remaining < 0) timer.remaining = 0;`
+                // This PREVENTS negative time/overtime tracking if we subtract too much?
+                // OR if we are just adding time?
+
+                // If I am at 10s and subtract 30s (-20s). It sets to 0. 
+                // That seems safe for "during countdown".
+                // If I am in overtime (-10) and subtract 30s -> -40.
+                // The existing logic CLEARS overtime. 
+                // Does the user want that? "add some preset seconds addition and substration".
+                // Usually operators want to adjust remaining time.
+                // I will keep the clamp at 0 for now to avoid confusion unless requested.
+                // Actually, if we are already in overtime, we might want to adjust how DEEP we are?
+                // But "Remaining" usually implies positive.
+
+                // Let's stick to simple clamp for now.
                 if (timer.remaining < 0) timer.remaining = 0;
                 timer.emitUpdate(); // Force update display
             }
@@ -508,6 +595,52 @@ function init() {
     els.btnConfirmWarning.addEventListener('click', () => {
         closeWarningModal();
         finalizeStart();
+    });
+
+    // 9. Next Event Modal Listeners
+    els.btnStayEvent.addEventListener('click', closeNextEventModal);
+    els.btnProceedEvent.addEventListener('click', () => {
+        if (nextEventIdToStart) {
+            startEvent(nextEventIdToStart);
+        }
+        closeNextEventModal();
+    });
+
+    // 10. Delete Modal Listeners
+    els.btnCancelDelete.addEventListener('click', closeDeleteModal);
+    els.btnConfirmDelete.addEventListener('click', () => {
+        if (eventIdToDelete) {
+            // Check if we are deleting the ACTIVE event
+            if (EventSchedule.activeEventId === eventIdToDelete) {
+                // Find next event BEFORE deleting
+                const currentEvent = EventSchedule.getEvent(eventIdToDelete);
+                const currentIndex = EventSchedule.events.indexOf(currentEvent);
+                const nextEvent = EventSchedule.events[currentIndex + 1];
+
+                // Delete the current one
+                EventSchedule.deleteEvent(eventIdToDelete);
+
+                if (nextEvent) {
+                    // Start next event immediately
+                    startEvent(nextEvent.id);
+                } else {
+                    // No next event -> Reset to Idle
+                    timer.stop();
+                    timer.remaining = 0;
+                    timer.totalDuration = 0;
+                    updateDisplay("00:00", null);
+                    timer.emitUpdate();
+                    broadcastState();
+                }
+                renderEvents();
+            } else {
+                // Deleting inactive/pending/completed event
+                if (EventSchedule.deleteEvent(eventIdToDelete)) {
+                    renderEvents();
+                }
+            }
+        }
+        closeDeleteModal();
     });
 }
 
@@ -650,17 +783,39 @@ function updateDisplay(timeStr, warningLevel) {
     els.timeReadout.className = 'font-timer text-[7rem] leading-none font-bold tracking-tighter text-white tabular-nums select-none transition-all timer-glow';
 
     // Apply new Logic
-    if (warningLevel === 'CRITICAL') {
-        // Red Breathing
+
+    // Always clear pulse first
+    els.timerContainer.classList.remove('animate-pulse-red');
+
+    if (warningLevel === 'CRITICAL' || warningLevel === 'OVERTIME') {
+        // Red Breathing & Overtime Header
         els.timeReadout.classList.remove('text-white', 'timer-glow');
         els.timeReadout.classList.add('text-breathe-red');
+
+        // Let's strictly show "OVERTIME" only if timer.remaining <= 0.
+        if (timer.remaining <= 0) {
+            els.overtimeIndicator.classList.remove('hidden');
+
+            // Add background pulse
+            els.timerContainer.classList.add('animate-pulse-red');
+
+            // Format Negative (-MM:SS) if not already present
+            if (!timeStr.startsWith('-')) {
+                els.timeReadout.textContent = '-' + timeStr;
+            }
+        } else {
+            els.overtimeIndicator.classList.add('hidden');
+        }
+
     } else if (warningLevel === 'GENTLE') {
         // Amber Breathing display
         els.timeReadout.classList.remove('text-white', 'timer-glow');
         els.timeReadout.classList.add('text-breathe-amber');
+        els.overtimeIndicator.classList.add('hidden');
     } else {
         // Normal White
         els.timeReadout.classList.add('text-white', 'timer-glow');
+        els.overtimeIndicator.classList.add('hidden');
     }
 }
 
@@ -682,6 +837,55 @@ function updateControls(status) {
         els.btnStartText.textContent = 'Start';
         els.btnStart.classList.remove('bg-zinc-700', 'text-white');
         els.btnStart.classList.add('bg-primary', 'text-white');
+    }
+
+    // Update Right-Hand Side Play/Pause buttons in the list if they exist
+    // This ensures that if we pause/play via Spacebar or Main Button, the list buttons sync up.
+    // We can do this by re-rendering events, but that might be heavy if dragging.
+    // Better: Select the active action button and update it.
+    if (EventSchedule.activeEventId) {
+        // Find the active card
+        const activeCard = document.querySelector(`[data-event-id="${EventSchedule.activeEventId}"]`);
+        if (activeCard) {
+            const pauseBtn = activeCard.querySelector('[data-action="pause"]');
+            if (pauseBtn) {
+                // Sync with global status
+                const isPaused = status !== 'RUNNING'; // IDLE, PAUSED, OVERTIME all imply "Not Running"
+                // Wait, if OVERTIME, we are RUNNING? 
+                // timer.status = 'RUNNING' even in overtime? Yes, usually.
+                // Let's check logic: isPaused = (status === 'PAUSED');
+                const pausedState = (status === 'PAUSED');
+
+                const iconSpan = pauseBtn.querySelector('span');
+                if (pausedState) {
+                    // Show Resume (Play)
+                    iconSpan.textContent = 'play_arrow';
+                    pauseBtn.title = 'Resume';
+                    pauseBtn.classList.add('text-yellow-400', 'bg-yellow-400/10');
+                    pauseBtn.classList.remove('text-zinc-400', 'hover:text-white');
+
+                    // Also update left icon if we want?
+                    // The renderEventCard does it. Re-rendering might be safer but leads to flicker?
+                    // Let's just re-render to be safe and consistent since `renderEventCard` has the logic.
+                    // renderEvents(); // REMOVED to prevent loop/flicker. The button update below is enough for now, 
+                    // or let renderEvents handle it if status changes trigger it.
+                    // Actually, onStatusChange calls updateControls. If updateControls calls renderEvents, 
+                    // and renderEvents re-creates buttons... it might be okay, but inefficient.
+                    // Let's rely on renderEvents for the Left Icon, but update specific button here?
+                    // "renderEventCard" uses isPaused to set class.
+
+                    // If we don't call renderEvents, the LEFT icon (status icon) won't update.
+                    // Let's call renderEvents() but be careful.
+                    renderEvents();
+                } else {
+                    // Show Pause
+                    // iconSpan.textContent = 'pause_circle';
+                    // pauseBtn.title = 'Pause';
+                    // But re-rendering handles "Active" classes and styles best.
+                    renderEvents();
+                }
+            }
+        }
     }
 }
 

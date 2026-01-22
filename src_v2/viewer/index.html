@@ -27,33 +27,34 @@
         class="absolute inset-0 z-0 opacity-0 transition-opacity duration-1000 ease-in-out pointer-events-none"></div>
 
     <!-- Main Content -->
-    <main class="relative z-10 flex flex-col items-center justify-center w-full h-full text-center">
+    <main class="relative z-10 flex flex-col items-center justify-center w-full h-full text-center px-4 gap-4">
+
         <!-- Session Title (Top) -->
-        <div class="absolute top-8 left-0 right-0 px-8 flex justify-center overflow-hidden">
+        <div class="w-full max-w-[90vw] overflow-hidden whitespace-nowrap">
             <h2 id="session-title"
-                class="text-zinc-400 font-display text-[3vw] font-bold uppercase tracking-widest opacity-0 transition-opacity duration-700 whitespace-nowrap">
+                class="text-zinc-300 font-display text-[5vw] font-bold uppercase tracking-widest opacity-0 transition-opacity duration-700">
                 <!-- Content Injected via JS -->
             </h2>
         </div>
 
-        <!-- Timer Display -->
-        <div id="timer-container" class="relative">
+        <!-- Timer Display (Middle - Flexible) -->
+        <div id="timer-container" class="relative w-full flex justify-center items-center">
             <h1 id="timer-display"
-                class="font-viewer text-[35vw] font-bold leading-none tracking-tight tabular-nums transition-all duration-300">
+                class="font-viewer text-[35vw] font-bold leading-none tracking-tight tabular-nums transition-all duration-300 select-none">
                 00:00
             </h1>
 
-            <!-- Overtime Message (Hidden by default) -->
+            <!-- Overtime Message -->
             <h1 id="overtime-display"
-                class="font-viewer text-[25vw] font-bold leading-none tracking-tight text-accent hidden animate-pulse-slow">
+                class="absolute inset-0 flex items-center justify-center font-viewer text-[25vw] font-bold leading-none tracking-tight text-white hidden animate-pulse-slow">
                 TIME UP
             </h1>
         </div>
 
         <!-- Speaker Name (Bottom) -->
-        <div class="absolute bottom-12 left-0 right-0 px-8 flex justify-center">
+        <div class="w-full max-w-[80vw] overflow-hidden whitespace-nowrap">
             <h3 id="current-speaker"
-                class="text-zinc-500 font-display text-[2vw] font-medium tracking-wide opacity-0 transition-opacity duration-700">
+                class="text-zinc-500 font-display text-[6vw] font-medium tracking-wide opacity-0 transition-opacity duration-700">
                 <!-- Content Injected via JS -->
             </h3>
         </div>

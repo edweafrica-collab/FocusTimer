@@ -2,23 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom Scrollbar (Webkit) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #18181b;
+    /* zinc-900 */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+    /* zinc-700 */
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #52525b;
+    /* zinc-600 */
+}
+
+/* Ensure Body Scrolls */
+html,
+body {
+    height: 100%;
+    overflow-y: auto;
+    /* Enable vertical scroll */
+    background-color: #000000;
+    /* Ensure bg consistent when scrolling */
+}
+
 @layer components {
     .timer-glow {
         text-shadow: 0 0 20px rgba(255, 255, 255, 0.15),
             0 0 40px rgba(255, 255, 255, 0.08);
     }
 
-    /* Insertion Line logic */
-    .insertion-line {
-        @apply relative h-1 -my-0.5 z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer;
+    /* === Classic V1 Alerts (Restored) === */
+    /* 1. Breathing Background (Overtime) - Viewer */
+    .overtime-mode {
+        background-color: #000000;
+        animation: breathe-bg-solid 3s infinite ease-in-out;
     }
 
-    .insertion-line::before {
-        content: '';
-        @apply absolute inset-x-0 h-[1px] bg-primary/30;
+    @keyframes breathe-bg-solid {
+
+        0%,
+        100% {
+            background-color: #000000;
+        }
+
+        50% {
+            background-color: #450A0A;
+        }
     }
 
-    /* === Legacy Breathing Effects === */
+    /* Dashboard: Overtime Indicator Text */
+    .overtime-indicator {
+        font-family: 'Space Grotesk', sans-serif;
+        letter-spacing: 0.5em;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        /* text-sm */
+        font-weight: 700;
+        /* font-bold */
+        color: #ef4444;
+        /* red-500 */
+        opacity: 0.8;
+        transform: translateY(-0.5rem);
+        animation: pulse-slow 3s infinite ease-in-out;
+    }
+
+    @keyframes pulse-slow {
+
+        0%,
+        100% {
+            opacity: 0.6;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    /* 2. Warning Glows (Inset Box Shadows) */
+    .warning-gentle {
+        opacity: 1 !important;
+        box-shadow: inset 0 0 150px 50px rgba(251, 191, 36, 0.15);
+        /* Amber */
+        animation: glow-breathe-amber 3s infinite ease-in-out;
+    }
+
+    .warning-critical {
+        opacity: 1 !important;
+        box-shadow: inset 0 0 120px 40px rgba(239, 68, 68, 0.15);
+        /* Red */
+        animation: glow-breathe-red 2s infinite ease-in-out;
+    }
+
     @keyframes glow-breathe-amber {
 
         0%,
@@ -43,26 +126,73 @@
         }
     }
 
+    /* Insertion Line logic */
+    .insertion-line {
+        @apply relative h-1 -my-0.5 z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer;
+    }
+
+    .insertion-line::before {
+        content: '';
+        @apply absolute inset-x-0 h-[1px] bg-primary/30;
+    }
+
+    /* === Mask/Shadow Breathing Effects (Inward Growing Border) === */
+    /* Effect description: A shadow mask growing inwards from the edges */
+
+    @keyframes mask-breathe-amber {
+
+        0%,
+        100% {
+            box-shadow: inset 0 0 50px 20px rgba(251, 191, 36, 0.1);
+        }
+
+        50% {
+            box-shadow: inset 0 0 150px 60px rgba(251, 191, 36, 0.4);
+        }
+    }
+
+    @keyframes mask-breathe-red {
+
+        0%,
+        100% {
+            box-shadow: inset 0 0 80px 30px rgba(239, 68, 68, 0.2);
+        }
+
+        50% {
+            box-shadow: inset 0 0 250px 100px rgba(239, 68, 68, 0.6);
+        }
+    }
+
     .animate-breathe-amber {
-        animation: glow-breathe-amber 3s infinite ease-in-out;
+        animation: mask-breathe-amber 4s infinite ease-in-out;
     }
 
     .animate-breathe-red {
-        animation: glow-breathe-red 2s infinite ease-in-out;
+        animation: mask-breathe-red 2.5s infinite ease-in-out;
     }
 
-    /* Dashboard specific micro-pulse for text (since it has no full overlay) */
+    /* Keep text breathing for dashboard */
+    .text-breathe-amber {
+        animation: text-breathe-amber 1.5s infinite ease-in-out;
+    }
+
+    .text-breathe-red {
+        animation: text-breathe-red 1s infinite ease-in-out;
+    }
+
     @keyframes text-breathe-amber {
 
         0%,
         100% {
-            color: #FBBF24;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+            opacity: 1;
+            color: #fbbf24;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
         }
 
         50% {
-            color: #F59E0B;
-            text-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            opacity: 0.6;
+            color: #d97706;
+            text-shadow: 0 0 5px rgba(251, 191, 36, 0.1);
         }
     }
 
@@ -70,22 +200,34 @@
 
         0%,
         100% {
-            color: #EF4444;
-            text-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+            opacity: 1;
+            color: #ef4444;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
         }
 
         50% {
-            color: #DC2626;
-            text-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+            opacity: 0.5;
+            color: #991b1b;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
         }
     }
 
-    .text-breathe-amber {
-        animation: text-breathe-amber 3s infinite ease-in-out;
+    /* Dashboard Container Pulse (Overtime) */
+    .animate-pulse-red {
+        animation: pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
 
-    .text-breathe-red {
-        animation: text-breathe-red 2s infinite ease-in-out;
+    @keyframes pulse-red {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: .7;
+            background-color: rgba(127, 29, 29, 0.1);
+        }
     }
 
     /* Manual Time Input Fix */

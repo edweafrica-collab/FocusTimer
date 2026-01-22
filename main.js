@@ -3,6 +3,15 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
+// === CONFIGURATION ===
+// Version Options: 
+// 1. 'classic'  -> The original UI (src)
+// 2. 'redesign' -> The new UI (src_v2)
+const UI_VERSION = 'redesign';
+
+const SRC_DIR = UI_VERSION === 'classic' ? 'src' : 'src_v2';
+console.log(`[FocusTimer] Launching ${UI_VERSION} UI from: ${SRC_DIR}`);
+
 const USER_DATA_PATH = app.getPath('userData');
 const STATE_FILE = path.join(USER_DATA_PATH, 'session-state.json');
 
@@ -48,21 +57,23 @@ function createDashboard() {
     const { width, height } = primaryDisplay.workAreaSize;
 
     dashboardWindow = new BrowserWindow({
-        width: 600,
-        height: 920,
-        x: primaryDisplay.bounds.x + (width - 600) / 2,
-        y: primaryDisplay.bounds.y + (height - 920) / 2,
+        width: 900,
+        height: 1000,
+        minWidth: 600,
+        minHeight: 700,
+        x: primaryDisplay.bounds.x + (width - 900) / 2,
+        y: primaryDisplay.bounds.y + (height - 1000) / 2,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
         },
-        title: 'FocusTime - Dashboard',
+        title: `FocusTime - Dashboard (${UI_VERSION === 'classic' ? 'V1' : 'V2'})`,
         autoHideMenuBar: true,
         show: false
     });
 
-    dashboardWindow.loadFile(path.join(__dirname, 'src_v2', 'dashboard', 'index.html'));
+    dashboardWindow.loadFile(path.join(__dirname, SRC_DIR, 'dashboard', 'index.html'));
 
     dashboardWindow.once('ready-to-show', () => {
         dashboardWindow.show();
@@ -151,7 +162,7 @@ function createViewer(displayId = null) {
         title: 'FocusTime - Viewer',
     });
 
-    viewerWindow.loadFile(path.join(__dirname, 'src_v2', 'viewer', 'index.html'));
+    viewerWindow.loadFile(path.join(__dirname, SRC_DIR, 'viewer', 'index.html'));
 
     // Viewer Silent Recovery
     viewerWindow.webContents.on('render-process-gone', (event, details) => {
@@ -259,6 +270,29 @@ app.whenReady().then(() => {
             createSplash();
         }
     });
+
+    // Initial Screen Check for Auto-Viewer (Startup)
+    // Only auto-launch if >1 screen detected on app start
+    const displays = screen.getAllDisplays();
+    if (displays.length > 1) {
+        // Auto-launch viewer on secondary
+        setTimeout(() => {
+            if (!viewerWindow) {
+                createViewer(displays[1].id);
+            }
+        }, 3500); // Wait for splash/dashboard to settle
+    }
+
+    // Dynamic Screen Detection (Runtime)
+    screen.on('display-added', (event, newDisplay) => {
+        if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+            dashboardWindow.webContents.send('display-detected', {
+                id: newDisplay.id,
+                label: newDisplay.label
+            });
+        }
+    });
+
 });
 
 app.on('window-all-closed', () => {

@@ -86,6 +86,12 @@
                         00:00:00
                     </div>
 
+                    <!-- Overtime Indicator -->
+                    <div id="overtime-indicator"
+                        class="hidden absolute -bottom-8 left-0 right-0 text-center overtime-indicator pointer-events-none">
+                        OVERTIME
+                    </div>
+
                     <!-- Manual Input (Absolutley positioned to match readout) -->
                     <input type="text" id="manual-time-input"
                         class="hidden absolute inset-0 w-full h-full bg-surface-dark/50 backdrop-blur-sm text-[7rem] leading-none font-bold tracking-tighter text-white text-center focus:outline-none rounded-2xl p-0 m-0 z-10 font-timer caret-primary selection:bg-primary/30 selection:text-white placeholder-zinc-700"
@@ -135,6 +141,15 @@
                                 class="preset-btn bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-red-400 py-2 rounded-xl text-xs font-semibold transition-all border border-zinc-800/50 hover:border-red-900/30"
                                 data-time="-5">-5m</button>
                         </div>
+                        <!-- Seconds Presets (New) -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                class="preset-btn bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white py-2 rounded-xl text-xs font-semibold transition-all border border-zinc-800/50 hover:border-zinc-700"
+                                data-time="0.5">+30s</button>
+                            <button
+                                class="preset-btn bg-zinc-900 hover:bg-zinc-800 text-zinc-500 hover:text-red-400 py-2 rounded-xl text-xs font-semibold transition-all border border-zinc-800/50 hover:border-red-900/30"
+                                data-time="-0.5">-30s</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,13 +167,7 @@
                         <h3 class="font-bold text-lg text-white tracking-tight">Run of Show</h3>
                     </div>
                     <div class="flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-lg border border-zinc-800">
-                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Auto-Advance</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input id="auto-advance-toggle" checked="" class="sr-only peer" type="checkbox" value="" />
-                            <div
-                                class="w-9 h-5 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary">
-                            </div>
-                        </label>
+                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Schedule</span>
                     </div>
                 </div>
                 <div id="events-container" class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-1">
@@ -251,6 +260,93 @@
                 <button id="btn-confirm-warning"
                     class="flex-1 py-3 rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white transition-colors shadow-lg shadow-primary/20">
                     Proceed
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Next Event Confirmation Modal -->
+    <dialog id="next-event-modal"
+        class="bg-transparent p-0 w-[90%] max-w-md backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+        <div
+            class="bg-surface-dark border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden text-white transform transition-all scale-100 p-0 text-center">
+            <div class="p-8 flex flex-col items-center gap-4">
+                <div class="size-16 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-2">
+                    <span class="material-symbols-outlined text-3xl">playlist_play</span>
+                </div>
+                <h3 class="text-xl font-bold">Event Completed</h3>
+                <p class="text-zinc-400 text-sm leading-relaxed">
+                    Ready to proceed to the next event?
+                </p>
+                <div class="bg-zinc-900/50 rounded-lg p-3 w-full border border-zinc-800">
+                    <p id="next-event-title" class="text-white font-medium text-lg truncate">Next Event Title</p>
+                    <p id="next-event-duration" class="text-xs text-zinc-500 font-timer mt-1">00:00</p>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-zinc-900/50 border-t border-zinc-700 flex gap-3">
+                <button id="btn-stay-event"
+                    class="flex-1 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                    Stay Here
+                </button>
+                <button id="btn-proceed-event"
+                    class="flex-1 py-3 rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white transition-colors shadow-lg shadow-primary/20">
+                    Start Next
+                </button>
+            </div>
+        </div>
+    </dialog>
+    <!-- Delete Event Confirmation Modal -->
+    <dialog id="delete-event-modal"
+        class="bg-transparent p-0 w-[90%] max-w-sm backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+        <div
+            class="bg-surface-dark border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden text-white transform transition-all scale-100 p-0 text-center">
+            <div class="p-6 flex flex-col items-center gap-3">
+                <div class="size-12 rounded-full bg-red-900/20 flex items-center justify-center text-red-500 mb-1">
+                    <span class="material-symbols-outlined text-2xl">delete</span>
+                </div>
+                <h3 class="text-lg font-bold">Delete Event?</h3>
+                <p class="text-zinc-400 text-sm leading-relaxed px-4">
+                    Are you sure you want to remove <br />
+                    <span id="delete-event-title" class="text-white font-medium">Event Title</span>?
+                </p>
+                <p class="text-[11px] text-zinc-600 uppercase tracking-widest font-bold mt-1">This cannot be undone</p>
+            </div>
+            <div class="px-6 py-4 bg-zinc-900/50 border-t border-zinc-800 flex gap-3">
+                <button id="btn-cancel-delete"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                    Cancel
+                </button>
+                <button id="btn-confirm-delete"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-bold bg-red-600 hover:bg-red-700 text-white transition-colors shadow-lg shadow-red-900/20">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </dialog>
+    <!-- New Screen Detected Modal -->
+    <dialog id="new-screen-modal"
+        class="bg-transparent p-0 w-[90%] max-w-sm backdrop:bg-black/80 backdrop:backdrop-blur-sm">
+        <div
+            class="bg-surface-dark border border-primary/50 rounded-2xl shadow-2xl overflow-hidden text-white transform transition-all scale-100 p-0 text-center animate-pulse-border">
+            <div class="p-6 flex flex-col items-center gap-3">
+                <div class="size-12 rounded-full bg-primary/20 flex items-center justify-center text-primary mb-1">
+                    <span class="material-symbols-outlined text-2xl">desktop_windows</span>
+                </div>
+                <h3 class="text-lg font-bold">New Display Detected</h3>
+                <p class="text-zinc-400 text-sm leading-relaxed px-4">
+                    An external screen <span id="new-screen-label" class="text-white font-medium">Display 2</span> was
+                    connected.<br />
+                    Do you want to launch the Viewer on it?
+                </p>
+            </div>
+            <div class="px-6 py-4 bg-zinc-900/50 border-t border-zinc-800 flex gap-3">
+                <button id="btn-ignore-screen"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                    Stay Here
+                </button>
+                <button id="btn-launch-screen"
+                    class="flex-1 py-2.5 rounded-xl text-sm font-bold bg-primary hover:bg-primary-hover text-white transition-colors shadow-lg shadow-primary/20">
+                    Launch Viewer
                 </button>
             </div>
         </div>

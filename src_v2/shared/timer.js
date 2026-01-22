@@ -89,32 +89,49 @@ class FocusTimer {
     }
 
     checkWarnings() {
-        const warningThreshold = this.calculateWarningThreshold(); // ms
+        // User Logic Implementation:
+        // 1. > 20 mins: Warn at 7 mins (GENTLE), Critical at ? (Assume standard 1m)
+        // 2. 10 - 20 mins: Warn at ~3-5 mins (Let's stick to 3m for safety)
+        // 3. 5 - 10 mins: Warn at 2 mins
+        // 4. < 5 mins: Warn at 1 min
 
-        // Critical warning (e.g., last 30s or 1 min depending on logic) - let's simplify for now based on PRD
-        // PRD: "WarningTrigger = CLAMP(TotalTime × 0.15, Min=30s, Max=5m)"
+        // "Mask Effect" Logic in CSS handles the visual fade in/out. 
+        // We just need to trigger the state.
 
-        // The PRD specifies ONE warning logic trigger, implying "Gentle Warning".
-        // "Critical Warning" is "Final moments". Let's say Critical is fixed at 30s or 10%? 
-        // PRD Table: 
-        // Gentle: pulsing orange. (Triggered by the formula)
-        // Critical: pulsing red. (Final moments)
-
-        const timeRemainingSeconds = this.remaining / 1000;
-        const warningThresholdSeconds = warningThreshold / 1000;
+        const totalMinutes = this.totalDuration / 60000;
+        const remainingMinutes = this.remaining / 60000;
+        const remSecs = this.remaining / 1000;
 
         let nextLevel = 'NONE';
 
-        if (timeRemainingSeconds <= 0) {
+        if (this.remaining <= 0) {
             nextLevel = 'OVERTIME';
-        } else if (timeRemainingSeconds <= 30 && this.totalDuration > 60000) {
-            // Critical at 30s left (if talk is > 1m)
-            nextLevel = 'CRITICAL';
-        } else if (timeRemainingSeconds <= 10 && this.totalDuration <= 60000) {
-            // For short talks (<1m), critical is 10s
-            nextLevel = 'CRITICAL';
-        } else if (timeRemainingSeconds <= warningThresholdSeconds) {
-            nextLevel = 'GENTLE';
+        } else {
+            // Determine Threshold based on Total Duration Tier
+            let gentleThresholdMin = 0;
+
+            if (totalMinutes >= 20) {
+                gentleThresholdMin = 7;
+            } else if (totalMinutes >= 10) {
+                gentleThresholdMin = 3;
+            } else if (totalMinutes >= 5) {
+                gentleThresholdMin = 2;
+            } else {
+                // Short talks (< 5m)
+                gentleThresholdMin = 1;
+            }
+
+            // Critical Threshold (Final Countdown) - Standardizing at 1 min or 30s
+            // User visual: "Full red background... fades from red to black"
+            // Let's set Critical at 1 minute generally
+            let criticalThresholdMin = 1;
+            if (totalMinutes < 2) criticalThresholdMin = 0.5; // 30s for tiny talks
+
+            if (remainingMinutes <= criticalThresholdMin) {
+                nextLevel = 'CRITICAL';
+            } else if (remainingMinutes <= gentleThresholdMin) {
+                nextLevel = 'GENTLE';
+            }
         }
 
         if (this.warningLevel !== nextLevel) {
@@ -123,20 +140,7 @@ class FocusTimer {
         }
     }
 
-    calculateWarningThreshold() {
-        const totalSeconds = this.totalDuration / 1000;
-        let warningSeconds = totalSeconds * 0.15;
-
-        // CLAMP(TotalTime * 0.15, Min=30s, Max=5m)
-        if (warningSeconds < 30) warningSeconds = 30;
-        if (warningSeconds > 300) warningSeconds = 300;
-
-        // Edge case: If total time is very short (< 30s), trigger immediately? 
-        // Or just ensure we don't warn before start.
-        if (warningSeconds > totalSeconds) warningSeconds = totalSeconds / 2;
-
-        return warningSeconds * 1000;
-    }
+    // calculateWarningThreshold removed as it's replaced by explicit tier logic above
 
     formatTime(ms) {
         const absMs = Math.abs(ms);

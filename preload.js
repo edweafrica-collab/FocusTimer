@@ -26,4 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // App Control
     onAppClosing: (callback) => ipcRenderer.on('app-closing', callback),
     sendCloseResult: (isRunning) => ipcRenderer.send('close-check-result', { isRunning }),
+
+    // Screen Detection
+    onDisplayDetected: (callback) => ipcRenderer.on('display-detected', (_event, value) => callback(value)),
 });
