@@ -4,13 +4,8 @@ const fs = require('fs');
 const os = require('os');
 
 // === CONFIGURATION ===
-// Version Options: 
-// 1. 'classic'  -> The original UI (src)
-// 2. 'redesign' -> The new UI (src_v2)
-const UI_VERSION = 'redesign';
-
-const SRC_DIR = UI_VERSION === 'classic' ? 'src' : 'src_v2';
-console.log(`[FocusTimer] Launching ${UI_VERSION} UI from: ${SRC_DIR}`);
+const SRC_DIR = 'src_v2';
+console.log(`[FocusTimer] Launching UI from: ${SRC_DIR}`);
 
 const USER_DATA_PATH = app.getPath('userData');
 const STATE_FILE = path.join(USER_DATA_PATH, 'session-state.json');
@@ -40,7 +35,7 @@ function createSplash() {
         title: 'FocusTime'
     });
 
-    splashWindow.loadFile(path.join(__dirname, 'src', 'splash', 'index.html'));
+    splashWindow.loadFile(path.join(__dirname, 'src_v2', 'splash', 'index.html'));
 
     // Auto-close splash and launch dashboard after 3 seconds
     setTimeout(() => {
@@ -68,7 +63,7 @@ function createDashboard() {
             nodeIntegration: false,
             contextIsolation: true,
         },
-        title: `FocusTime - Dashboard (${UI_VERSION === 'classic' ? 'V1' : 'V2'})`,
+        title: `FocusTime - Dashboard`,
         autoHideMenuBar: true,
         show: false
     });
@@ -274,10 +269,14 @@ app.whenReady().then(() => {
     // Initial Screen Check for Auto-Viewer (Startup)
     // Only auto-launch if >1 screen detected on app start
     const displays = screen.getAllDisplays();
+    console.log('[Main] Startup Display Count:', displays.length);
+
     if (displays.length > 1) {
+        console.log('[Main] Multi-screen detected on startup. Launching viewer...');
         // Auto-launch viewer on secondary
         setTimeout(() => {
             if (!viewerWindow) {
+                console.log('[Main] Launching viewer on display:', displays[1].id);
                 createViewer(displays[1].id);
             }
         }, 3500); // Wait for splash/dashboard to settle
@@ -285,7 +284,9 @@ app.whenReady().then(() => {
 
     // Dynamic Screen Detection (Runtime)
     screen.on('display-added', (event, newDisplay) => {
+        console.log('[Main] EVENT: display-added', newDisplay.id, newDisplay.label);
         if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+            console.log('[Main] Sending display-detected to Dashboard');
             dashboardWindow.webContents.send('display-detected', {
                 id: newDisplay.id,
                 label: newDisplay.label

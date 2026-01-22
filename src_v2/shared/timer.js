@@ -1,3 +1,10 @@
+const WARNING_THRESHOLDS = {
+    LONG: 7,
+    MEDIUM: 3,
+    SHORT: 2,
+    TINY: 1
+};
+
 class FocusTimer {
     constructor() {
         this.totalDuration = 0; // ms
@@ -111,14 +118,14 @@ class FocusTimer {
             let gentleThresholdMin = 0;
 
             if (totalMinutes >= 20) {
-                gentleThresholdMin = 7;
+                gentleThresholdMin = WARNING_THRESHOLDS.LONG;
             } else if (totalMinutes >= 10) {
-                gentleThresholdMin = 3;
+                gentleThresholdMin = WARNING_THRESHOLDS.MEDIUM;
             } else if (totalMinutes >= 5) {
-                gentleThresholdMin = 2;
+                gentleThresholdMin = WARNING_THRESHOLDS.SHORT;
             } else {
                 // Short talks (< 5m)
-                gentleThresholdMin = 1;
+                gentleThresholdMin = WARNING_THRESHOLDS.TINY;
             }
 
             // Critical Threshold (Final Countdown) - Standardizing at 1 min or 30s

@@ -193,6 +193,49 @@ function renderEvents() {
     });
 }
 
+// Event Delegation Handler
+function handleEventAction(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+
+    e.stopPropagation();
+    const action = btn.dataset.action;
+
+    // Handle Insert (which has data-index but no eventId)
+    if (action === 'insert') {
+        const index = parseInt(btn.dataset.index);
+        openModal(index);
+        return;
+    }
+
+    // Handle Card Actions (require eventId)
+    const card = btn.closest('.group');
+    if (!card) return;
+
+    const eventId = card.dataset.eventId;
+    const event = EventSchedule.getEvent(eventId);
+    if (!event) return;
+
+    switch (action) {
+        case 'start':
+            startEvent(eventId);
+            break;
+        case 'pause':
+            if (timer.status === 'RUNNING') {
+                timer.pause();
+            } else {
+                timer.start();
+            }
+            break;
+        case 'edit':
+            openModal(eventId);
+            break;
+        case 'delete':
+            showDeleteModal(eventId);
+            break;
+    }
+}
+
 function renderEventCard(event, index) {
     const card = document.createElement('div');
     // Using new brand colors: surface-dark, primary border, etc.
@@ -308,51 +351,20 @@ function renderEventCard(event, index) {
         const hoverInsert = document.createElement('div');
         hoverInsert.className = 'absolute -bottom-3 left-1/2 -translate-x-1/2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer';
         hoverInsert.innerHTML = `
-            <div class="bg-zinc-800 text-zinc-400 hover:text-white hover:bg-primary hover:border-primary border border-zinc-600 rounded-full p-1 shadow-lg transform transition-transform hover:scale-110" title="Insert Event Here">
-                <span class="material-symbols-outlined text-[16px] block">add</span>
+            <div class="bg-zinc-800 text-zinc-400 hover:text-white hover:bg-primary hover:border-primary border border-zinc-600 rounded-full p-1 shadow-lg transform transition-transform hover:scale-110" title="Insert Event Here" data-action="insert" data-index="${index + 1}">
+                <span class="material-symbols-outlined text-[16px] block pointer-events-none">add</span>
             </div>
         `;
-        hoverInsert.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openModal(index + 1);
-        });
+        // Listener removed in favor of delegation
         card.appendChild(hoverInsert);
     }
 
-    // Setup action listeners
-    setupEventCardListeners(card, event);
+    // Setup action listeners REMOVED (Delegation)
 
     return card;
 }
 
-function setupEventCardListeners(card, event) {
-    const actions = card.querySelectorAll('[data-action]');
-    actions.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const action = btn.dataset.action;
-
-            switch (action) {
-                case 'start':
-                    startEvent(event.id);
-                    break;
-                case 'pause':
-                    if (timer.status === 'RUNNING') {
-                        timer.pause();
-                    } else {
-                        timer.start();
-                    }
-                    break;
-                case 'edit':
-                    openModal(event.id);
-                    break;
-                case 'delete':
-                    showDeleteModal(event.id);
-                    break;
-            }
-        });
-    });
-}
+// setupEventCardListeners function REMOVED
 
 function startEvent(eventId) {
     const event = EventSchedule.getEvent(eventId);
@@ -562,6 +574,9 @@ function init() {
     // 5. Initial Checks
     checkScreens();
 
+    // Event Delegation
+    els.eventsContainer.addEventListener('click', handleEventAction);
+
     // 6. Modal Handlers
     els.btnAddEvent.addEventListener('click', () => openModal());
     els.btnCloseModal.addEventListener('click', closeModal);
@@ -641,6 +656,27 @@ function init() {
             }
         }
         closeDeleteModal();
+    });
+
+    // 11. Screen Detection Listener
+    window.electronAPI.onDisplayDetected((newDisplay) => {
+        console.log('[Renderer] Handling Display Detected:', newDisplay);
+        // Show modal asking to launch viewer
+        els.newScreenLabel.textContent = newDisplay.label || `Display ${newDisplay.id}`;
+
+        // Handle Ignore
+        els.btnIgnoreScreen.onclick = () => {
+            els.newScreenModal.close();
+        };
+
+        // Handle Launch
+        els.btnLaunchScreen.onclick = () => {
+            // Launch on this specific display
+            window.electronAPI.launchViewer(newDisplay.id);
+            els.newScreenModal.close();
+        };
+
+        els.newScreenModal.showModal();
     });
 }
 

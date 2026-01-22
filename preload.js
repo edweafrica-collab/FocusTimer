@@ -28,5 +28,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     sendCloseResult: (isRunning) => ipcRenderer.send('close-check-result', { isRunning }),
 
     // Screen Detection
-    onDisplayDetected: (callback) => ipcRenderer.on('display-detected', (_event, value) => callback(value)),
+    onDisplayDetected: (callback) => ipcRenderer.on('display-detected', (_event, value) => {
+        console.log('[Preload] Received display-detected:', value);
+        callback(value);
+    }),
 });
