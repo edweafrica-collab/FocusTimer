@@ -5,7 +5,7 @@ const WARNING_THRESHOLDS = {
     TINY: 1
 };
 
-class FocusTimer {
+class CueTime {
     constructor() {
         this.totalDuration = 0; // ms
         this.remaining = 0; // ms
@@ -177,5 +177,5 @@ class FocusTimer {
 }
 
 if (typeof module !== 'undefined') {
-    module.exports = FocusTimer;
+    module.exports = CueTime;
 }

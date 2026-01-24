@@ -1,8 +1,8 @@
-# FocusTimer — UI/UX Redesign Proposal v2.0
+# cueTime — UI/UX Redesign Proposal v2.0
 
 **"Invisible control. Unmissable time."**
 
-> This document outlines a system-level redesign of FocusTimer to feel calmer, sharper, more modern, and more intentional—while respecting the dual-screen philosophy and professional intent.
+> This document outlines a system-level redesign of cueTime to feel calmer, sharper, more modern, and more intentional—while respecting the dual-screen philosophy and professional intent.
 
 ---
 
@@ -125,7 +125,7 @@ FOCUSTIME        [Show Screen]  │  Dual Display Ready  ●
 
 **After:**
 ```
-FocusTimer                                        ● Dual Display
+cueTime                                        ● Dual Display
 ```
 
 Changes:
@@ -323,7 +323,7 @@ After redesign, users should feel:
 
 ## Summary
 
-This redesign makes FocusTimer:
+This redesign makes cueTime:
 - Feel **intentional**
 - Feel **premium**
 - Feel **memorable**

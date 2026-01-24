@@ -5,7 +5,7 @@ const os = require('os');
 
 // === CONFIGURATION ===
 const SRC_DIR = 'src_v2';
-console.log(`[FocusTimer] Launching UI from: ${SRC_DIR}`);
+console.log(`[cueTime] Launching UI from: ${SRC_DIR}`);
 
 const USER_DATA_PATH = app.getPath('userData');
 const STATE_FILE = path.join(USER_DATA_PATH, 'session-state.json');
@@ -21,8 +21,8 @@ const powerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep');
 
 function createSplash() {
     splashWindow = new BrowserWindow({
-        width: 500,
-        height: 400,
+        width: 800,
+        height: 700,
         frame: false,
         alwaysOnTop: true,
         transparent: false,
@@ -32,7 +32,7 @@ function createSplash() {
             nodeIntegration: true, // For simple shell usage in splash
             contextIsolation: false
         },
-        title: 'FocusTime'
+        title: 'cueTime'
     });
 
     splashWindow.loadFile(path.join(__dirname, 'src_v2', 'splash', 'index.html'));
@@ -63,7 +63,7 @@ function createDashboard() {
             nodeIntegration: false,
             contextIsolation: true,
         },
-        title: `FocusTime - Dashboard`,
+        title: `cueTime - Dashboard`,
         autoHideMenuBar: true,
         show: false
     });
@@ -124,13 +124,23 @@ function createDashboard() {
 }
 
 function createViewer(displayId = null) {
-    if (viewerWindow) return;
+    // If viewer exists, close it first so we can move it/re-create on new display
+    if (viewerWindow && !viewerWindow.isDestroyed()) {
+        // CRITICAL: Remove listeners to prevent 'closed' handler from nulling the NEW viewerWindow
+        viewerWindow.removeAllListeners('closed');
+        viewerWindow.removeAllListeners('render-process-gone');
+        viewerWindow.close();
+        viewerWindow = null;
+    }
 
     const displays = screen.getAllDisplays();
+    console.log(`[Main] createViewer: Requested ID: ${displayId} (Type: ${typeof displayId})`);
+    console.log(`[Main] Available Displays: ${displays.map(d => `${d.id} (${d.bounds.x},${d.bounds.y})`).join(', ')}`);
+
     let targetDisplay;
 
     if (displayId) {
-        targetDisplay = displays.find(d => d.id === displayId);
+        targetDisplay = displays.find(d => d.id == displayId);
     }
 
     if (!targetDisplay) {
@@ -154,7 +164,7 @@ function createViewer(displayId = null) {
             contextIsolation: true,
         },
         backgroundColor: '#000000',
-        title: 'FocusTime - Viewer',
+        title: 'cueTime - Viewer',
     });
 
     viewerWindow.loadFile(path.join(__dirname, SRC_DIR, 'viewer', 'index.html'));
@@ -217,6 +227,15 @@ ipcMain.on('viewer-escape', () => {
     if (viewerWindow && !viewerWindow.isDestroyed()) {
         viewerWindow.close();
         viewerWindow = null;
+    }
+});
+
+ipcMain.on('restore-z-order', () => {
+    if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+        dashboardWindow.setAlwaysOnTop(false);
+    }
+    if (viewerWindow && !viewerWindow.isDestroyed()) {
+        viewerWindow.setAlwaysOnTop(true);
     }
 });
 
@@ -285,6 +304,16 @@ app.whenReady().then(() => {
     // Dynamic Screen Detection (Runtime)
     screen.on('display-added', (event, newDisplay) => {
         console.log('[Main] EVENT: display-added', newDisplay.id, newDisplay.label);
+
+        // If viewer is blocking primary screen, bring dashboard up
+        if (viewerWindow && !viewerWindow.isDestroyed()) {
+            viewerWindow.setAlwaysOnTop(false);
+            if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+                dashboardWindow.setAlwaysOnTop(true);
+                dashboardWindow.focus();
+            }
+        }
+
         if (dashboardWindow && !dashboardWindow.isDestroyed()) {
             console.log('[Main] Sending display-detected to Dashboard');
             dashboardWindow.webContents.send('display-detected', {

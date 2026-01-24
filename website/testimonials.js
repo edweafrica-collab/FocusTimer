@@ -1,5 +1,5 @@
 /**
- * FocusTimer - Floating Testimonial Stream v4
+ * cueTime - Floating Testimonial Stream v4
  * Slide-in from right, dynamic height, no overlap
  */
 

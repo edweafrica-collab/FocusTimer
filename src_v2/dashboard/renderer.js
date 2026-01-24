@@ -1,4 +1,4 @@
-const timer = new FocusTimer();
+const timer = new CueTime();
 
 // UI Elements
 const els = {
@@ -498,9 +498,13 @@ function init() {
         els.btnShowViewer.addEventListener('click', async () => {
             const screens = await window.electronAPI.getScreens();
             if (screens.length > 1) {
-                const secondary = screens.find(s => s.id !== 1) || screens[1];
+                // Find potential secondary display (non-zero position) or just take the second one
+                const secondary = screens.find(s => s.bounds.x !== 0 || s.bounds.y !== 0) || screens[1];
+
+                window.electronAPI.restoreZOrder(); // Restore Z-order before launching
                 window.electronAPI.launchViewer(secondary.id);
             } else {
+                window.electronAPI.restoreZOrder();
                 window.electronAPI.launchViewer(screens[0].id);
             }
         });
@@ -666,12 +670,14 @@ function init() {
 
         // Handle Ignore
         els.btnIgnoreScreen.onclick = () => {
+            window.electronAPI.restoreZOrder();
             els.newScreenModal.close();
         };
 
         // Handle Launch
         els.btnLaunchScreen.onclick = () => {
             // Launch on this specific display
+            window.electronAPI.restoreZOrder(); // Reset Z before launching (launch will set Viewer alwaysOnTop anyway)
             window.electronAPI.launchViewer(newDisplay.id);
             els.newScreenModal.close();
         };
@@ -801,7 +807,10 @@ async function finalizeStart(screens = null) {
 
     // Launch Viewer logic
     if (screens.length > 1) {
-        const secondary = screens.find(s => s.id !== 1) || screens[1];
+        // Find potential secondary display (non-zero position) or just take the second one
+        const secondary = screens.find(s => s.bounds.x !== 0 || s.bounds.y !== 0) || screens[1];
+
+        window.electronAPI.restoreZOrder();
         window.electronAPI.launchViewer(secondary.id);
     } else {
         // Single screen mode - launch on primary

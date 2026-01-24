@@ -1,5 +1,5 @@
 /**
- * FocusTimer Website - Configuration
+ * cueTime Website - Configuration
  */
 
 tailwind.config = {

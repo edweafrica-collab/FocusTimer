@@ -1,5 +1,5 @@
 {
-  "name": "focustimer",
+  "name": "cuetime",
   "version": "2.0.0",
   "main": "main.js",
   "scripts": {
@@ -12,8 +12,8 @@
   "author": "",
   "license": "ISC",
   "build": {
-    "appId": "com.focustimer.app",
-    "productName": "FocusTime",
+    "appId": "com.cuetime.app",
+    "productName": "cueTime",
     "win": {
       "target": "nsis",
       "icon": "icon.png"

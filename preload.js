@@ -32,4 +32,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
         console.log('[Preload] Received display-detected:', value);
         callback(value);
     }),
+    restoreZOrder: () => ipcRenderer.send('restore-z-order'),
 });
