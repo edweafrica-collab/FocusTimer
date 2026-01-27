@@ -25,8 +25,9 @@ function createSplash() {
         backgroundColor: '#121212',
         resizable: false,
         webPreferences: {
-            nodeIntegration: true, // For simple shell usage in splash
-            contextIsolation: false
+            nodeIntegration: false,
+            contextIsolation: true,
+            preload: path.join(__dirname, 'src', 'splash', 'preload.js')
         },
         title: 'FocusTime'
     });
@@ -242,6 +243,10 @@ ipcMain.handle('load-state', async () => {
 });
 
 app.whenReady().then(() => {
+    // Security: Remove default menu to prevent DevTools access in production
+    const { Menu } = require('electron');
+    Menu.setApplicationMenu(null);
+
     // Fresh Start: Delete previous state if exists
     try {
         if (fs.existsSync(STATE_FILE)) {

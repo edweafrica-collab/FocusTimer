@@ -116,15 +116,20 @@
 
     <script>
         // Optional: Open links in external browser
-        const { shell } = require('electron');
         document.getElementById('feedback').addEventListener('click', (e) => {
             e.preventDefault();
             // TODO: Replace with real link
+            if (window.api && window.api.openExternal) {
+                window.api.openExternal("https://example.com/feedback");
+            }
             console.log("Feedback clicked");
         });
         document.getElementById('donate').addEventListener('click', (e) => {
             e.preventDefault();
             // TODO: Replace with real link
+            if (window.api && window.api.openExternal) {
+                window.api.openExternal("https://example.com/donate");
+            }
             console.log("Donate clicked");
         });
     </script>

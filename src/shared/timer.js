@@ -68,36 +68,32 @@ class FocusTimer {
         this.lastTick = now;
 
         if (this.status === 'RUNNING') {
+            // Subtract the time passed since last tick
             this.remaining -= delta;
 
             if (this.remaining <= 0) {
                 // Switch to Overtime if not already
-                // In Overtime, remaining becomes negative, indicating time passed since zero
-                // We handle logic slightly differently or just let it go negative?
-                // PRD says "Overtime: Timer replaced with TIME UP! ... Secondary display: negative count-up"
-                // So we just let remaining go negative.
+                // In Overtime, remaining becomes negative.
                 if (this.warningLevel !== 'OVERTIME') {
                     this.warningLevel = 'OVERTIME';
                     this.callbacks.onWarning('OVERTIME');
                 }
             } else {
+                // Check if we need to trigger warning colors (Orange/Red)
                 this.checkWarnings();
             }
         }
+        // Notify listeners (Dashboard) to update UI
         this.callbacks.onTick(this.formatTime(this.remaining), this.remaining, this.warningLevel);
     }
 
     checkWarnings() {
         const warningThreshold = this.calculateWarningThreshold(); // ms
 
-        // Critical warning (e.g., last 30s or 1 min depending on logic) - let's simplify for now based on PRD
-        // PRD: "WarningTrigger = CLAMP(TotalTime × 0.15, Min=30s, Max=5m)"
-
-        // The PRD specifies ONE warning logic trigger, implying "Gentle Warning".
-        // "Critical Warning" is "Final moments". Let's say Critical is fixed at 30s or 10%? 
-        // PRD Table: 
-        // Gentle: pulsing orange. (Triggered by the formula)
-        // Critical: pulsing red. (Final moments)
+        // LOGIC:
+        // 1. Overtime: Time is up (Red Text)
+        // 2. Critical: Last 30 seconds (Pulsing Red Border)
+        // 3. Gentle: Last 15% of time (Pulsing Orange Border)
 
         const timeRemainingSeconds = this.remaining / 1000;
         const warningThresholdSeconds = warningThreshold / 1000;
