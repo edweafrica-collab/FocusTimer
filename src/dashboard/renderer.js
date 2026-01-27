@@ -129,9 +129,14 @@ function init() {
     // Enter Key to Start
     const handleEnterKey = (e) => {
         if (e.key === 'Enter') {
-            startSequence();
+            // Force commit of value (triggers 'change' -> resets to IDLE)
             els.minInput.blur();
             els.secInput.blur();
+
+            // Wait for the reset to complete before starting
+            setTimeout(() => {
+                startSequence();
+            }, 50);
         }
     };
     els.minInput.addEventListener('keydown', handleEnterKey);
@@ -276,18 +281,27 @@ async function startSequence() {
     }
 }
 
-function updateDisplay(timeStr, ms, warningLevel) {
-    els.timeReadout.textContent = timeStr;
+let lastTimeStr = "";
+let lastWarningLevel = "";
 
-    // Visual feedback on Dashboard for warnings?
-    if (warningLevel === 'CRITICAL') {
-        els.timeReadout.style.color = 'var(--warning-critical)';
-    } else if (warningLevel === 'GENTLE') {
-        els.timeReadout.style.color = 'var(--warning-gentle)';
-    } else if (warningLevel === 'OVERTIME') {
-        els.timeReadout.style.color = 'var(--warning-critical)';
-    } else {
-        els.timeReadout.style.color = 'white';
+function updateDisplay(timeStr, ms, warningLevel) {
+    if (timeStr !== lastTimeStr) {
+        els.timeReadout.textContent = timeStr;
+        lastTimeStr = timeStr;
+    }
+
+    if (warningLevel !== lastWarningLevel) {
+        // Visual feedback on Dashboard for warnings?
+        if (warningLevel === 'CRITICAL') {
+            els.timeReadout.style.color = 'var(--warning-critical)';
+        } else if (warningLevel === 'GENTLE') {
+            els.timeReadout.style.color = 'var(--warning-gentle)';
+        } else if (warningLevel === 'OVERTIME') {
+            els.timeReadout.style.color = 'var(--warning-critical)';
+        } else {
+            els.timeReadout.style.color = 'white';
+        }
+        lastWarningLevel = warningLevel;
     }
 }
 
@@ -315,6 +329,8 @@ function updateControls(status) {
     }
 }
 
+let lastBroadcastJSON = "";
+
 function broadcastState() {
     const state = {
         timeStr: timer.formatTime(timer.remaining),
@@ -324,7 +340,21 @@ function broadcastState() {
         sessionTitle: sessionTitle,
         isOvertime: timer.remaining <= 0
     };
-    window.electronAPI.sendTimerUpdate(state);
+
+    // Optimization: Only broadcast if visual state changes (ignore exact ms)
+    const visualState = {
+        timeStr: state.timeStr,
+        status: state.status,
+        warningLevel: state.warningLevel,
+        sessionTitle: state.sessionTitle,
+        isOvertime: state.isOvertime
+    };
+
+    const currentJSON = JSON.stringify(visualState);
+    if (currentJSON !== lastBroadcastJSON) {
+        window.electronAPI.sendTimerUpdate(state);
+        lastBroadcastJSON = currentJSON;
+    }
 }
 
 function saveCurrentState() {
